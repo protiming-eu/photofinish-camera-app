@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">오픈 카메라</string>
+    <string name="app_name">Photo Finish Camera</string>
     <string name="action_settings">설정</string>
     <string name="action_popup">팝업 설정</string>
     <string name="intro_ok">확인 (이 메세지는 더이상 표시되지 않습니다)</string>
@@ -108,7 +108,7 @@
     <string name="preference_save_video_prefix">동영상 저장 접두사</string>
     <string name="preference_save_video_prefix_summary">저장시 동영상 파일명에 사용할 접두사를 설정합니다</string>
     <string name="preference_show_when_locked">잠겼을때 카메라 표시</string>
-    <string name="preference_show_when_locked_summary">만약 활성화되면 어떠한 잠금화면이 있더라도 그 위에 오픈 카메라를 표시합니다 (설정이나 갤러리 등에 접근하려면 여전히 잠금을 해제해야 합니다)</string>
+    <string name="preference_show_when_locked_summary">만약 활성화되면 어떠한 잠금화면이 있더라도 그 위에 Photo Finish Camera를 표시합니다 (설정이나 갤러리 등에 접근하려면 여전히 잠금을 해제해야 합니다)</string>
     <string name="preference_lock_video">동영상 촬영시 화면 잠금</string>
     <string name="preference_lock_video_summary">동영상 촬영시 우발적으로 녹화를 중지하는 것을 방지하기 위해 인터페이스를 잠급니다. 밀어서 잠금을 해제하세요. 다만 앱이 백그라운드로 가거나 화면이 비워지면 녹화는 언제나 중지됩니다.</string>
     <string name="preference_rotate_preview">미리보기 회전</string>
@@ -142,7 +142,7 @@
     <string name="preference_thumbnail_animation">썸네일 애니메이션 표시</string>
     <string name="preference_thumbnail_animation_summary">사진을 촬영할 때 움직이는 썸네일 애니메이션을 표시합니다</string>
     <string name="preference_keep_display_on">화면 항상 켜기</string>
-    <string name="preference_keep_display_on_summary">만약 활성화되면 오픈 카메라 인터페이스가 작동중일때 화면이 꺼지지 않습니다</string>
+    <string name="preference_keep_display_on_summary">만약 활성화되면 Photo Finish Camera 인터페이스가 작동중일때 화면이 꺼지지 않습니다</string>
     <string name="preference_max_brightness">강제 최대 밝기</string>
     <string name="preference_max_brightness_summary">기기 기본값 대신 화면을 최대 밝기로 고정합니다</string>
 
@@ -189,11 +189,11 @@
     <string name="preference_online_help">온라인 도움말</string>
     <string name="preference_use_camera2">Camera2 API 사용</string>
     <string name="preference_use_camera2_summary">안드로이드 5 버전의 Camera2 API - 부가 기능들을 지원하지만 아직 실험적입니다 (재시작됨)</string>
-    <string name="preference_about">오픈 카메라에 대해서</string>
+    <string name="preference_about">Photo Finish Camera에 대해서</string>
     <string name="preference_about_summary">앱 및 디버그 정보</string>
     <string name="preference_reset">설정 초기화</string>
-    <string name="preference_reset_summary">모든 오픈 카메라 설정을 초기화합니다</string>
-    <string name="preference_reset_question">모든 오픈 카메라 설정을 초기화할까요?</string>
+    <string name="preference_reset_summary">모든 Photo Finish Camera 설정을 초기화합니다</string>
+    <string name="preference_reset_question">모든 Photo Finish Camera 설정을 초기화할까요?</string>
 
     <string name="about_available">가능</string>
     <string name="about_not_available">불가능</string>

@@ -117,7 +117,7 @@
         <!-- Photo Finish viewer - advanced frame-by-frame with null time -->
         <activity
             android:name="net.sourceforge.opencamera.PhotoFinishActivity"
-            android:label="Photo Finish"
+            android:label="Photo Finish Camera"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="false"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"

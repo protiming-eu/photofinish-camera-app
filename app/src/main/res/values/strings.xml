@@ -1146,14 +1146,14 @@ After enabling, open a recorded video from the Gallery button to launch the inte
         such as for your device, manufacturer, operating system and/or Google accounts. For example:
         &lt;br/&gt;*Apps/services such as cloud services on your device may auto-upload photos and videos that are saved on your device.
         &lt;br/&gt;&lt;br/&gt;Photo Finish Camera is based on Open Camera, which is open source software licensed under GPL v3.
-        The source code is available at https://github.com/protiming/finishsnap
+        The source code is available at https://github.com/protiming-eu/photofinish-camera-app
         &lt;br/&gt;&lt;br/&gt;If you have inquiries about the privacy policy, please contact us by email at
         &lt;a href=\"mailto:info@protiming.eu?subject=Photo%20Finish%20Camera%20privacy%20policy\"&gt;info@protiming.eu&lt;/a&gt;.
     </string>
 
     <string name="preference_screen_licences" translatable="false">Open Source licences</string>
     <string name="preference_licence_open_camera" translatable="false">Photo Finish Camera &amp; Open Camera</string>
-    <string name="preference_licence_open_camera_text" translatable="false">Photo Finish Camera is based on Open Camera by Mark Harman (© 2013–2025). Both are released under GPL v3 or later. Photo Finish Camera © 2025–2026 myprotiming. Source code: https://github.com/protiming/finishsnap - Tap here for full licence text.</string>
+    <string name="preference_licence_open_camera_text" translatable="false">Photo Finish Camera is based on Open Camera by Mark Harman (© 2013–2025). Both are released under GPL v3 or later. Photo Finish Camera © 2025–2026 myprotiming. Source code: https://github.com/protiming-eu/photofinish-camera-app - Tap here for full licence text.</string>
     <string name="preference_licence_androidx" translatable="false">AndroidX libraries</string>
     <string name="preference_licence_androidx_text" translatable="false">Photo Finish Camera uses the AndroidX/Jetpack libraries
         under the Apache license version 2.0. Tap here for full licence text.</string>
@@ -1170,7 +1170,7 @@ After enabling, open a recorded video from the Gallery button to launch the inte
 
     <!-- There's no point translating the What's New text (and shouldn't be included in language-specific strings.xml) - it'll be updated constantly, and change each version -->
     <string name="whats_new_text" translatable="false">
-        <small>[This dialog is shown when Open Camera is updated. You can disable it under
+        <small>[This dialog is shown when Photo Finish Camera is updated. You can disable it under
             Settings/On screen GUI/Show What\'s New dialog.]</small>
         \n\n<b>v1.55:</b>\n
         <ul>

@@ -727,7 +727,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         // create notification channel - only needed on Android 8+
         // update: notifications now removed due to needing permissions on Android 13+
         /*if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) {
-            CharSequence name = "Open Camera Image Saving";
+            CharSequence name = "Photo Finish Camera Image Saving";
             String description = "Notification channel for processing and saving images in the background";
             int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
@@ -929,28 +929,28 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         }
         else if( (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && MyTileService.TILE_ID.equals(action)) || ACTION_SHORTCUT_CAMERA.equals(action) ) {
             if( MyDebug.LOG )
-                Log.d(TAG, "launching from quick settings tile or application shortcut for Open Camera: photo mode");
+                Log.d(TAG, "launching from quick settings tile or application shortcut for Photo Finish Camera: photo mode");
             applicationInterface.setVideoPref(false);
         }
         else if( (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && MyTileServiceVideo.TILE_ID.equals(action)) || ACTION_SHORTCUT_VIDEO.equals(action) ) {
             if( MyDebug.LOG )
-                Log.d(TAG, "launching from quick settings tile or application shortcut for Open Camera: video mode");
+                Log.d(TAG, "launching from quick settings tile or application shortcut for Photo Finish Camera: video mode");
             applicationInterface.setVideoPref(true);
         }
         else if( (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && MyTileServiceFrontCamera.TILE_ID.equals(action)) || ACTION_SHORTCUT_SELFIE.equals(action) ) {
             if( MyDebug.LOG )
-                Log.d(TAG, "launching from quick settings tile or application shortcut for Open Camera: selfie mode");
+                Log.d(TAG, "launching from quick settings tile or application shortcut for Photo Finish Camera: selfie mode");
             done_facing = true;
             applicationInterface.switchToCamera(true);
         }
         else if( ACTION_SHORTCUT_GALLERY.equals(action) ) {
             if( MyDebug.LOG )
-                Log.d(TAG, "launching from application shortcut for Open Camera: gallery");
+                Log.d(TAG, "launching from application shortcut for Photo Finish Camera: gallery");
             openGallery();
         }
         else if( ACTION_SHORTCUT_SETTINGS.equals(action) ) {
             if( MyDebug.LOG )
-                Log.d(TAG, "launching from application shortcut for Open Camera: settings");
+                Log.d(TAG, "launching from application shortcut for Photo Finish Camera: settings");
             openSettings();
         }
 
@@ -1079,7 +1079,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                 String new_folder;
                 if( res.alt == null ) {
                     // no alternative, fall back to default
-                    new_folder = "OpenCamera";
+                    new_folder = "Photo Finish Camera";
                 }
                 else {
                     // replace with the alternative
@@ -5594,7 +5594,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         editText.setHint(getResources().getString(R.string.preference_save_location));
         editText.setInputType(InputType.TYPE_CLASS_TEXT);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        editText.setText(sharedPreferences.getString(PreferenceKeys.SaveLocationPreferenceKey, "OpenCamera"));
+        editText.setText(sharedPreferences.getString(PreferenceKeys.SaveLocationPreferenceKey, "Photo Finish Camera"));
         InputFilter filter = new InputFilter() {
             // whilst Android seems to allow any characters on internal memory, SD cards are typically formatted with FAT32
             final String disallowed = "|\\?*<\":>";
