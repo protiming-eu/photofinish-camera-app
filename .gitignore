@@ -9,7 +9,7 @@ _other/
 _saved/
 tmp/
 .gradle/
-
+/play-store-assets/
 .idea/*
 !.idea/inspectionProfiles
 

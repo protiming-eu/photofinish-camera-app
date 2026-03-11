@@ -623,12 +623,8 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         if( MyDebug.LOG )
             Log.d(TAG, "onCreate: time after setting system ui visibility listener: " + (System.currentTimeMillis() - debug_time));
 
-        // show "about" dialog for first time use
+        // Mark first run without auto-starting tutorial; tutorial is launched manually from Settings.
         if( !has_done_first_time ) {
-            if( !is_test ) {
-                startQuickTutorial();
-            }
-
             setFirstTimeFlag();
         }
 
