@@ -9,13 +9,4 @@
                 android:endColor="#2A0606" />
         </shape>
     </item>
-    <item android:left="-120dp" android:top="-120dp" android:right="140dp" android:bottom="420dp">
-        <shape android:shape="oval">
-            <gradient
-                android:type="radial"
-                android:gradientRadius="280dp"
-                android:centerColor="#80D32F2F"
-                android:endColor="#00D32F2F" />
-        </shape>
-    </item>
 </layer-list>
