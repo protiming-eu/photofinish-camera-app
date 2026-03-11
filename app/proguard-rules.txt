@@ -1,0 +1,3 @@
+# Intentionally minimal for the GPL source-release branch.
+# Release builds currently disable minification, but Gradle still references
+# this file from app/build.gradle.
