@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="seekbar_background">#20000000</color>
+    <color name="icons_background">#20000000</color> <!-- when used as background color for imagebutton, the rgb color seems to be ignored for Android 6 onwards, but still relevant for older versions -->
+    <color name="icons_background_tint">#ff000000</color>
+    <color name="shutter_icon">#D32F2F</color>
+    <color name="shutter_icon_pressed">#B71C1C</color>
+    <color name="shutter_icon_video_recording">#FF1744</color>
+    <color name="primary_green">#D32F2F</color>
+    <color name="primary_green_dark">#B71C1C</color>
+    <color name="primary_green_light">#EF5350</color>
+    <color name="accent_green">#EF5350</color>
+</resources>
