@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Google Pixel style selector for shutter button -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true"
+          android:drawable="@drawable/take_photo_shutter_pressed_pixel" />
+    <item android:drawable="@drawable/take_photo_shutter_pixel" />
+</selector>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Green flash auto icon -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/primary_green"
+        android:pathData="M3,2v12h3v9l7,-12L9,11l4,-9z"/>
+    <path
+        android:fillColor="@color/primary_green"
+        android:pathData="M17,13h1c1.1,0 2,-0.9 2,-2c0,-1.1 -0.9,-2 -2,-2h-1c0,0.74 0,1.26 0,2c0,0.74 0,1.26 0,2z"/>
+</vector>

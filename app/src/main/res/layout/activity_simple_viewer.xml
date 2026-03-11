@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- ExoPlayer Video View -->
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/playerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        app:show_buffering="when_playing"
+        app:use_controller="false"
+        app:surface_type="surface_view" />
+
+    <!-- Frame Info Overlay (Top Left) -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|top"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="120dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="90dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_frame_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|top"
+            android:shadowColor="#000000"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="4"
+            android:text="Frame: 0 / 0\nTime: 0.000 s\nFPS: 30.0"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="visible" />
+
+    </LinearLayout>
+
+    <!-- Bottom Controls -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:fitsSystemWindows="true">
+
+        <LinearLayout
+            android:id="@+id/controls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="#37000000"
+            android:orientation="vertical">
+
+            <!-- SeekBar Row -->
+            <LinearLayout
+                android:id="@+id/controls_seekbar_group"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:weightSum="100">
+
+                <TextView
+                    android:id="@+id/playbackPositionTxt"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="10"
+                    android:gravity="center"
+                    android:textColor="#FFFFFF" />
+
+                <SeekBar
+                    android:id="@+id/seekBar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="80"
+                    android:max="100"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:progress="0"
+                    android:progressBackgroundTint="#80FFFFFF"
+                    android:progressTint="#0099CC"
+                    android:thumbTint="#0099CC" />
+
+                <TextView
+                    android:id="@+id/playbackDurationTxt"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="10"
+                    android:gravity="center"
+                    android:textColor="#FFFFFF" />
+
+            </LinearLayout>
+
+            <!-- Control Buttons Row -->
+            <LinearLayout
+                android:id="@+id/controls_button_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/btn_prev"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:contentDescription="Step Backward"
+                    android:onClick="previousFrame"
+                    android:src="@drawable/ic_step_backward"
+                    android:tint="#FFFFFF" />
+
+                <ImageButton
+                    android:id="@+id/btn_play"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:contentDescription="Play"
+                    android:onClick="togglePlayback"
+                    android:src="@android:drawable/ic_media_play"
+                    android:tint="#FFFFFF" />
+
+                <ImageButton
+                    android:id="@+id/btn_next"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:contentDescription="Step Forward"
+                    android:onClick="nextFrame"
+                    android:src="@drawable/ic_step_forward"
+                    android:tint="#FFFFFF" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</FrameLayout>
