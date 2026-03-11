@@ -10,6 +10,7 @@ _saved/
 tmp/
 .gradle/
 /play-store-assets/
+app/photofinish-upload.jks
 .idea/*
 !.idea/inspectionProfiles
 
