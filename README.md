@@ -8,32 +8,7 @@ This branch contains the source code and build files needed to publish the Andro
 - Product flavor resources under `app/src/demo` and `app/src/premium`
 - Gradle wrapper and build configuration
 - License texts bundled with the app
-
-## Requirements
-
-- Java 17
-- Android SDK 35
-- Android build tools installed through Android Studio or the command line SDK manager
-
-## Build
-
-From the repository root:
-
-```sh
-./gradlew assemblePremiumDebug
-```
-
-To create a release build:
-
-```sh
-./gradlew assemblePremiumRelease
-```
-
-## Notes
-
-- The package uses the application ID `com.myprotiming.photofinishcamera`.
-- `local.properties` is intentionally not included in this branch. Configure your local Android SDK path before building.
-
+  
 ## License
 
 The app source is distributed under GPL v3 or later. See `gpl-3.0.txt`.
