@@ -340,6 +340,10 @@
     <string name="exposure_shutter_speed">Shutter speed</string>
 
     <string name="camera_error">Serious camera error</string>
+    <string name="speed_0125x_not_available">0.125x speed is not available on this device</string>
+    <string name="manual_iso_shutter_not_available_at_0125x">Manual ISO and shutter speed are not available at 0.125x speed on this device</string>
+    <string name="speed_x_not_available">%1$s speed is not available on this device</string>
+    <string name="manual_iso_shutter_not_available_at_speed">Manual ISO and shutter speed are not available at %1$s speed on this device</string>
 
     <string name="preference_camera2_fast_burst">Enable fast HDR/expo burst</string>
     <string name="preference_camera2_fast_burst_summary">Allows faster capture of the HDR/expo shots. Disable this if your device has problems when taking photos with HDR or Expo photo modes.</string>
@@ -511,6 +515,7 @@
     <string name="preference_video_capture_rate_normal">Normal</string>
     <string name="slow_motion_enabled">Slow motion enabled</string>
     <string name="slow_motion_disabled">Slow motion disabled</string>
+    <string name="slow_motion_rates_hidden_runtime">Some slow-motion speeds are hidden due to previous recording failures on this device: %1$s</string>
 
     <string name="flash_off">Flash Off</string>
     <string name="flash_auto">Flash Auto</string>
@@ -1053,6 +1058,7 @@ After enabling, open a recorded video from the Gallery button to launch the inte
     <string name="error_features_bitrate">Bitrate</string>
     <string name="error_features_frame_rate">Frame rate</string>
     <string name="error_features_slow_motion">Slow motion</string>
+    <string name="error_features_manual_iso">Manual ISO</string>
 
     <string name="preference_comment_ypr">Store yaw, pitch and roll</string>
     <string name="preference_comment_ypr_summary">Store the yaw, pitch and roll of the device in the photo\'s Exif user comment (JPEG formats only)</string>
@@ -1194,9 +1200,52 @@ After enabling, open a recorded video from the Gallery button to launch the inte
     <!-- Frame by frame video viewer -->
     <string name="preference_frame_by_frame_viewer">Use frame-by-frame video viewer</string>
     <string name="preference_frame_by_frame_viewer_summary">Open videos with custom viewer that allows frame-by-frame navigation</string>
+    <string name="preference_frame_by_frame_viewer_locked_summary">Available only with an active subscription or lifetime unlock.</string>
     <string name="video_frame">Video frame</string>
     <string name="previous_frame">Previous frame</string>
     <string name="next_frame">Next frame</string>
     <string name="play_pause">Play/Pause</string>
+
+    <string name="launcher_title_land">Photo Finish\nCamera</string>
+    <string name="launcher_camera_button"> Camera</string>
+    <string name="launcher_viewer_button">Frame-by-frame video player</string>
+    <string name="launcher_viewer_button_locked">Frame-by-frame video player (Subscription required)</string>
+    <string name="launcher_subscription_button">Unlock Subscription</string>
+    <string name="launcher_subscription_manage_button">Manage Subscription</string>
+    <string name="subscription_offer_launch"></string>
+
+    <string name="subscription_screen_title">Unlock Pro Features</string>
+    <string name="subscription_features_title">What&#8217;s included:</string>
+    <string name="subscription_feature_1">✓  Frame-by-frame video player</string>
+    <string name="subscription_feature_2">✓  Manual ISO &amp; shutter speed control</string>
+    <string name="subscription_feature_3">✓  Slow-motion at 1/8× and 1/4× speed</string>
+    <string name="subscription_feature_4">✓  Ads free app</string>
+    <string name="subscription_feature_5">✓  All future Pro features</string>
+    <string name="subscription_buy_monthly">Monthly plan</string>
+    <string name="subscription_buy_yearly">Yearly plan</string>
+    <string name="subscription_buy_lifetime">Lifetime unlock</string>
+    <string name="subscription_buy_monthly_with_price">Monthly plan - %1$s</string>
+    <string name="subscription_buy_yearly_with_price">Yearly plan - %1$s</string>
+    <string name="subscription_buy_lifetime_with_price">Lifetime unlock - %1$s</string>
+    <string name="subscription_restore">Restore purchases</string>
+    <string name="subscription_status_loading">Connecting to Google Play Billing...</string>
+    <string name="subscription_status_ready">Billing ready.</string>
+    <string name="subscription_status_unavailable">Google Play Billing unavailable.</string>
+    <string name="subscription_status_reconnecting">Reconnecting to Google Play Billing...</string>
+    <string name="subscription_status_products_failed">Could not load product details.</string>
+    <string name="subscription_status_canceled">Purchase canceled.</string>
+    <string name="subscription_status_pending">Purchase pending approval.</string>
+    <string name="subscription_status_active">Subscription active. Pro features unlocked.</string>
+    <string name="subscription_status_restored">Purchase state refreshed.</string>
+    <string name="subscription_status_error">Billing error: %1$s</string>
+    <string name="subscription_status_error_with_code">Billing error (%1$d): %2$s</string>
+
+    <string name="billing_product_monthly" translatable="false">photofinish_monthly</string>
+    <string name="billing_product_yearly" translatable="false">photofinish_yearly</string>
+    <string name="billing_product_lifetime" translatable="false">photofinish_lifetime</string>
+
+    <!-- Replace with your production AdMob ad unit IDs before release. -->
+    <string name="admob_banner_ad_unit_id" translatable="false">ca-app-pub-7252190728467791/1702598164</string>
+    <string name="admob_interstitial_ad_unit_id" translatable="false">ca-app-pub-7252190728467791/3057976669</string>
 
 </resources>

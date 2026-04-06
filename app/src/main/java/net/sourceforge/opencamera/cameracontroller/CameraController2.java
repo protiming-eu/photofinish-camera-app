@@ -76,8 +76,8 @@ import android.view.WindowMetrics;
 public class CameraController2 extends CameraController {
     private static final String TAG = "CameraController2";
 
-    // Dodaj novo spremenljivko za sledenje ali manual kontrole delujejo za slow motion
-    private boolean supports_manual_control_for_high_speed = true; // assume true initially, set to false if we detect it doesn't work
+    // Assume manual ISO/shutter works for high speed until we detect otherwise for this device/session.
+    private boolean supports_manual_control_for_high_speed = true;
 
     private final Context context;
     private final Map<String, CameraFeaturesCache> camera_features_caches; // used to improve performance for subsequent CameraController2 objects; key is the cameraIdS string, value is a CameraFeaturesCache object
@@ -831,7 +831,7 @@ public class CameraController2 extends CameraController {
                 return false;
             }
 
-            if( has_iso ) {
+            if( has_iso && (!is_video_high_speed || supports_manual_control_for_high_speed) ) {
                 if( MyDebug.LOG ) {
                     Log.d(TAG, "manual mode");
                     Log.d(TAG, "iso: " + iso);
@@ -868,7 +868,7 @@ public class CameraController2 extends CameraController {
             }
             else {
                 if( MyDebug.LOG ) {
-                    Log.d(TAG, "auto mode");
+                    Log.d(TAG, has_iso ? "auto mode (manual disabled for high speed video)" : "auto mode");
                     Log.d(TAG, "flash_value: " + flash_value);
                 }
                 if( ae_target_fps_range != null ) {
@@ -4571,6 +4571,14 @@ public class CameraController2 extends CameraController {
         return supports_manual_control_for_high_speed;
     }
 
+    private void disableManualControlForHighSpeedIfNeeded(String reason) {
+        if( is_video_high_speed && camera_settings.has_iso && supports_manual_control_for_high_speed ) {
+            if( MyDebug.LOG )
+                Log.d(TAG, reason);
+            supports_manual_control_for_high_speed = false;
+        }
+    }
+
     @Override
     public long getExposureTime() {
         return camera_settings.exposure_time;
@@ -6319,75 +6327,21 @@ public class CameraController2 extends CameraController {
                         }
                         catch(CameraAccessException e) {
                             MyDebug.logStackTrace(TAG, "failed to start preview", e);
-                            
-                            // Check if this is high speed video with manual ISO - mark as not supported
-                            if( is_video_high_speed && camera_settings.has_iso && supports_manual_control_for_high_speed ) {
-                                if( MyDebug.LOG )
-                                    Log.d(TAG, "high speed video with manual ISO failed in onConfigured - not supported on this device");
-                                
-                                supports_manual_control_for_high_speed = false;
-                                
-                                // Show warning to user on UI thread
-                                final Activity activity = (Activity)context;
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if( MyDebug.LOG )
-                                            Log.e(TAG, "Manual ISO/shutter speed not available for slow motion on this device");
-                                        android.widget.Toast.makeText(context, 
-                                            "Manual ISO/shutter speed not supported for slow motion on this device. Switch to auto ISO and restart recording.", 
-                                            android.widget.Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
+                            disableManualControlForHighSpeedIfNeeded("high speed video with manual ISO failed in onConfigured - not supported on this device");
                             
                             captureSession = null;
                             extensionSession = null;
                         }
                         catch(IllegalStateException e) {
                             MyDebug.logStackTrace(TAG, "IllegalStateException trying to start preview", e);
-                            
-                            // Check if this is high speed video with manual ISO
-                            if( is_video_high_speed && camera_settings.has_iso && supports_manual_control_for_high_speed ) {
-                                if( MyDebug.LOG )
-                                    Log.d(TAG, "high speed video with manual ISO failed (IllegalStateException) - not supported on this device");
-                                
-                                supports_manual_control_for_high_speed = false;
-                                
-                                final Activity activity = (Activity)context;
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        android.widget.Toast.makeText(context, 
-                                            "Manual ISO/shutter speed not supported for slow motion on this device. Switch to auto ISO and restart recording.", 
-                                            android.widget.Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
+                            disableManualControlForHighSpeedIfNeeded("high speed video with manual ISO failed (IllegalStateException) - not supported on this device");
                             
                             captureSession = null;
                             extensionSession = null;
                         }
                         catch(IllegalArgumentException e) {
                             MyDebug.logStackTrace(TAG, "IllegalArgumentException trying to start preview", e);
-                            
-                            // Check if this is high speed video with manual ISO
-                            if( is_video_high_speed && camera_settings.has_iso && supports_manual_control_for_high_speed ) {
-                                if( MyDebug.LOG )
-                                    Log.d(TAG, "high speed video with manual ISO failed (IllegalArgumentException) - not supported on this device");
-                                
-                                supports_manual_control_for_high_speed = false;
-                                
-                                final Activity activity = (Activity)context;
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        android.widget.Toast.makeText(context, 
-                                            "Manual ISO/shutter speed not supported for slow motion on this device. Switch to auto ISO and restart recording.", 
-                                            android.widget.Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
+                            disableManualControlForHighSpeedIfNeeded("high speed video with manual ISO failed (IllegalArgumentException) - not supported on this device");
                             
                             captureSession = null;
                             extensionSession = null;
@@ -6433,27 +6387,7 @@ public class CameraController2 extends CameraController {
                 }
 
                 void onConfigureFailed() {
-                    // Check if this is high speed video with manual ISO - mark as not supported
-                    if( is_video_high_speed && camera_settings.has_iso && supports_manual_control_for_high_speed ) {
-                        if( MyDebug.LOG )
-                            Log.d(TAG, "high speed video with manual ISO failed - not supported on this device");
-                        
-                        supports_manual_control_for_high_speed = false;
-                        
-                        // Show warning to user on UI thread
-                        final Activity activity = (Activity)context;
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if( MyDebug.LOG )
-                                    Log.e(TAG, "Manual ISO/shutter speed not available for slow motion on this device");
-                                // Show toast to user
-                                android.widget.Toast.makeText(context, 
-                                    "Manual ISO/shutter speed not supported for slow motion on this device. Switch to auto ISO and restart recording.", 
-                                    android.widget.Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
+                    disableManualControlForHighSpeedIfNeeded("high speed video with manual ISO failed - not supported on this device");
                     
                     synchronized( background_camera_lock ) {
                         callback_done = true;

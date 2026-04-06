@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
+import android.preference.PreferenceManager;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import net.sourceforge.opencamera.ui.ArraySeekBarPreference;
@@ -107,6 +109,17 @@ public class PreferenceSubPreview extends PreferenceSubScreen {
 
             pref = findPreference("preference_focus_peaking_color");
             pg.removePreference(pref);
+        }
+
+        if( !AccessControl.hasSubscriptionAccess(this.getActivity()) ) {
+            Preference frameByFramePref = findPreference("preference_frame_by_frame_viewer");
+            if( frameByFramePref != null ) {
+                frameByFramePref.setEnabled(false);
+                frameByFramePref.setSummary(R.string.preference_frame_by_frame_viewer_locked_summary);
+            }
+
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+            sharedPreferences.edit().putBoolean("preference_frame_by_frame_viewer", false).apply();
         }
 
         if( MyDebug.LOG )

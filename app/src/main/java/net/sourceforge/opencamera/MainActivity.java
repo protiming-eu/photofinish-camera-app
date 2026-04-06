@@ -1316,7 +1316,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         // also if we change this method name or where it's located, remember to update the mention in
         // opencamera_source.txt
         //return "https://opencamera.sourceforge.io/" + append;
-        return "https://protiming.eu/" + append;
+        return "https://photofinish.protiming.eu/" + append;
     }
 
     void launchOnlineHelp() {
@@ -1455,7 +1455,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
             Log.d(TAG, "launchOnlinePrivacyPolicy");
         // if we change this, remember that any page linked to must abide by Google Play developer policies!
         //Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getOnlineHelpUrl("index.html#privacy")));
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getOnlineHelpUrl("privacy_oc.html")));
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getOnlineHelpUrl("privacy_policy.html")));
         startActivity(browserIntent);
     }
 
@@ -1612,7 +1612,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
     }
 
     public void changeISO(int change) {
-        if( preview.supportsISORange() ) {
+        if( AccessControl.hasSubscriptionAccess(this) && preview.supportsISORange() ) {
             mainUI.changeSeekbar(R.id.iso_seekbar, change);
         }
     }
@@ -5222,11 +5222,15 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
             is_video = mimeType != null && mimeType.startsWith("video/");
         }
         
-        // If it's a video, open our custom frame-by-frame viewer (disabled in demo)
+        // If subscription access is not available, frame-by-frame viewer is always disabled.
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean use_frame_viewer = sharedPreferences.getBoolean("preference_frame_by_frame_viewer", false);
+        boolean default_frame_viewer = getResources().getBoolean(R.bool.preference_default_frame_by_frame_viewer);
+        boolean use_frame_viewer = sharedPreferences.getBoolean("preference_frame_by_frame_viewer", default_frame_viewer);
+        if( !AccessControl.hasSubscriptionAccess(this) ) {
+            use_frame_viewer = false;
+        }
         
-        if (is_video && use_frame_viewer && !is_test && !BuildConfig.IS_DEMO) {
+        if (is_video && use_frame_viewer && !is_test) {
             if (MyDebug.LOG)
                 Log.d(TAG, "opening Simple Viewer");
             Intent intent = new Intent(this, SimpleViewerActivity.class);
