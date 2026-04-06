@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="preference_default_frame_by_frame_viewer">false</bool>
+</resources>

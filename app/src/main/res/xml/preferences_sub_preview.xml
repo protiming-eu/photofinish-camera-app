@@ -238,7 +238,7 @@
         android:key="preference_frame_by_frame_viewer"
         android:title="@string/preference_frame_by_frame_viewer"
         android:summary="@string/preference_frame_by_frame_viewer_summary"
-        android:defaultValue="false"
+        android:defaultValue="@bool/preference_default_frame_by_frame_viewer"
         />
 
     <!-- <CheckBoxPreference

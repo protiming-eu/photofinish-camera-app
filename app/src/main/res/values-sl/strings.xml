@@ -331,6 +331,8 @@
     <string name="exposure_shutter_speed">Hitrost zaklopa</string>
 	
 	<string name="camera_error">Resna napaka fotoaparata</string>
+    <string name="speed_x_not_available">Hitrost %1$s na tej napravi ni na voljo</string>
+    <string name="manual_iso_shutter_not_available_at_speed">Ročni ISO in čas zaklopa pri hitrosti %1$s na tej napravi nista na voljo</string>
 	
 	<string name="preference_camera2_fast_burst">Omogoči hitro zaporedje HDR/osvetlitve</string>
     <string name="preference_camera2_fast_burst_summary">Omogoča hitrejše slikanje fotografij s HDR-om/stopnjevanjem osvetlitvami.  Onemogočite, če ima vaša naprava pri slikanju fotografij z načinoma HDR/stopnjevanje osvetlitve težave.</string>
@@ -502,6 +504,7 @@
     <string name="preference_video_capture_rate_normal">Običajna</string>
     <string name="slow_motion_enabled">Počasni posnetek je omogočen.</string>
     <string name="slow_motion_disabled">Počasni posnetek je onemogočen.</string>
+    <string name="slow_motion_rates_hidden_runtime">Nekatere hitrosti počasnega posnetka so skrite zaradi preteklih napak snemanja na tej napravi: %1$s</string>
 
     <string name="flash_off">Bliskavica je izklopljena.</string>
     <string name="flash_auto">Samodejna bliskavica</string>
@@ -956,6 +959,7 @@
     <string name="error_features_bitrate">Bitna hitrost</string>
     <string name="error_features_frame_rate">Hitrost sličic</string>
     <string name="error_features_slow_motion">Počasni posnetek</string>
+    <string name="error_features_manual_iso">Ročni ISO</string>
 
     <string name="preference_comment_ypr">Shrani odklon, naklon in nagib</string>
     <string name="preference_comment_ypr_summary">V uporabniško opombo Exif v fotografiji shrani odklon, naklon in nagib naprave (samo oblika JPEG)</string>

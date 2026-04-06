@@ -505,6 +505,9 @@ public class MyApplicationInterface extends BasicApplicationInterface {
 
     @Override
     public String getISOPref() {
+        if( !AccessControl.hasSubscriptionAccess(main_activity) ) {
+            return CameraController.ISO_DEFAULT;
+        }
         return sharedPreferences.getString(PreferenceKeys.ISOPreferenceKey, CameraController.ISO_DEFAULT);
     }
 
@@ -790,6 +793,9 @@ public class MyApplicationInterface extends BasicApplicationInterface {
     @Override
     public float getVideoCaptureRateFactor() {
         float capture_rate_factor = sharedPreferences.getFloat(PreferenceKeys.getVideoCaptureRatePreferenceKey(main_activity.getPreview().getCameraId(), cameraIdSPhysical), 1.0f);
+        if( !AccessControl.hasSubscriptionAccess(main_activity) && capture_rate_factor < 0.5f ) {
+            capture_rate_factor = 0.5f;
+        }
         if( MyDebug.LOG )
             Log.d(TAG, "capture_rate_factor: " + capture_rate_factor);
         if( Math.abs(capture_rate_factor - 1.0f) > 1.0e-5 ) {
@@ -818,26 +824,45 @@ public class MyApplicationInterface extends BasicApplicationInterface {
      *  slow motion should only be considered as supported if at least 2 entries
      *  are returned. Entries are returned in increasing order.
      */
+    private boolean isSlowMotionRateBlocked(float capture_rate_factor) {
+        String key = PreferenceKeys.getVideoCaptureRateUnsupportedPreferenceKey(main_activity.getPreview().getCameraId(), cameraIdSPhysical, capture_rate_factor);
+        return sharedPreferences.getBoolean(key, false);
+    }
+
+    private void addSlowMotionRateIfAllowed(List<Float> rates, float capture_rate_factor) {
+        if( !isSlowMotionRateBlocked(capture_rate_factor) ) {
+            rates.add(capture_rate_factor);
+        }
+        else if( MyDebug.LOG ) {
+            Log.d(TAG, "slow motion capture rate blocked by runtime failure: " + capture_rate_factor);
+        }
+    }
+
     public List<Float> getSupportedVideoCaptureRates() {
         List<Float> rates = new ArrayList<>();
         if( main_activity.getPreview().supportsVideoHighSpeed() ) {
             // We consider a slow motion rate supported if we can get at least 30fps in slow motion.
             // If this code is updated, see if we also need to update how slow motion fps is chosen
             // in getVideoFPSPref().
+            final boolean has_subscription_access = AccessControl.hasSubscriptionAccess(main_activity);
             if( main_activity.getPreview().getVideoQualityHander().videoSupportsFrameRateHighSpeed(240) ||
                     main_activity.getPreview().getVideoQualityHander().videoSupportsFrameRate(240) ) {
-                rates.add(1.0f/8.0f);
-                rates.add(1.0f/4.0f);
-                rates.add(1.0f/2.0f);
+                if( has_subscription_access ) {
+                    addSlowMotionRateIfAllowed(rates, 1.0f/8.0f);
+                    addSlowMotionRateIfAllowed(rates, 1.0f/4.0f);
+                }
+                addSlowMotionRateIfAllowed(rates, 1.0f/2.0f);
             }
             else if( main_activity.getPreview().getVideoQualityHander().videoSupportsFrameRateHighSpeed(120) ||
                     main_activity.getPreview().getVideoQualityHander().videoSupportsFrameRate(120) ) {
-                rates.add(1.0f/4.0f);
-                rates.add(1.0f/2.0f);
+                if( has_subscription_access ) {
+                    addSlowMotionRateIfAllowed(rates, 1.0f/4.0f);
+                }
+                addSlowMotionRateIfAllowed(rates, 1.0f/2.0f);
             }
             else if( main_activity.getPreview().getVideoQualityHander().videoSupportsFrameRateHighSpeed(60) ||
                     main_activity.getPreview().getVideoQualityHander().videoSupportsFrameRate(60) ) {
-                rates.add(1.0f/2.0f);
+                addSlowMotionRateIfAllowed(rates, 1.0f/2.0f);
             }
         }
         rates.add(1.0f);
@@ -1524,6 +1549,9 @@ public class MyApplicationInterface extends BasicApplicationInterface {
 
     @Override
     public long getExposureTimePref() {
+        if( !AccessControl.hasSubscriptionAccess(main_activity) ) {
+            return CameraController.EXPOSURE_TIME_DEFAULT;
+        }
         return sharedPreferences.getLong(PreferenceKeys.ExposureTimePreferenceKey, CameraController.EXPOSURE_TIME_DEFAULT);
     }
 
@@ -3077,7 +3105,13 @@ public class MyApplicationInterface extends BasicApplicationInterface {
     @Override
     public void setISOPref(String iso) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(PreferenceKeys.ISOPreferenceKey, iso);
+        if( AccessControl.hasSubscriptionAccess(main_activity) ) {
+            editor.putString(PreferenceKeys.ISOPreferenceKey, iso);
+        }
+        else {
+            editor.putString(PreferenceKeys.ISOPreferenceKey, CameraController.ISO_DEFAULT);
+            editor.putLong(PreferenceKeys.ExposureTimePreferenceKey, CameraController.EXPOSURE_TIME_DEFAULT);
+        }
         editor.apply();
     }
 
@@ -3164,7 +3198,12 @@ public class MyApplicationInterface extends BasicApplicationInterface {
     @Override
     public void setExposureTimePref(long exposure_time) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(PreferenceKeys.ExposureTimePreferenceKey, exposure_time);
+        if( AccessControl.hasSubscriptionAccess(main_activity) ) {
+            editor.putLong(PreferenceKeys.ExposureTimePreferenceKey, exposure_time);
+        }
+        else {
+            editor.putLong(PreferenceKeys.ExposureTimePreferenceKey, CameraController.EXPOSURE_TIME_DEFAULT);
+        }
         editor.apply();
     }
 
