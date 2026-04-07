@@ -1,7 +1,10 @@
 package net.sourceforge.opencamera;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -27,6 +30,8 @@ import java.util.Map;
 
 /** Purchase screen for subscription and lifetime unlock using Google Play Billing. */
 public class SubscriptionActivity extends Activity implements PurchasesUpdatedListener {
+    private static final String PLAY_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions?package=";
+
     private BillingClient billingClient;
 
     private Button monthlyButton;
@@ -35,7 +40,10 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     private Button restoreButton;
     private TextView statusText;
 
-    private final Map<String, ProductDetails> productDetailsById = new HashMap<>();
+    private ProductDetails subscriptionProductDetails;
+    private ProductDetails lifetimeProductDetails;
+    private final Map<String, ProductDetails.SubscriptionOfferDetails> subscriptionOfferByBasePlanId = new HashMap<>();
+    private boolean lifetimeManagePromptShown;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +65,9 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         yearlyButton.setEnabled(false);
         lifetimeButton.setEnabled(false);
 
-        monthlyButton.setOnClickListener(v -> launchPurchase(getString(R.string.billing_product_monthly), BillingClient.ProductType.SUBS));
-        yearlyButton.setOnClickListener(v -> launchPurchase(getString(R.string.billing_product_yearly), BillingClient.ProductType.SUBS));
-        lifetimeButton.setOnClickListener(v -> launchPurchase(getString(R.string.billing_product_lifetime), BillingClient.ProductType.INAPP));
+        monthlyButton.setOnClickListener(v -> launchSubscriptionPurchase(getString(R.string.billing_subscription_base_plan_monthly)));
+        yearlyButton.setOnClickListener(v -> launchSubscriptionPurchase(getString(R.string.billing_subscription_base_plan_yearly)));
+        lifetimeButton.setOnClickListener(v -> launchLifetimePurchase());
         restoreButton.setOnClickListener(v -> refreshPurchases(true));
 
         connectBilling();
@@ -102,11 +110,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     private void queryProductDetails() {
         List<QueryProductDetailsParams.Product> productList = new ArrayList<>();
         productList.add(QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(getString(R.string.billing_product_monthly))
-                .setProductType(BillingClient.ProductType.SUBS)
-                .build());
-        productList.add(QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(getString(R.string.billing_product_yearly))
+                .setProductId(getString(R.string.billing_product_subscription))
                 .setProductType(BillingClient.ProductType.SUBS)
                 .build());
         productList.add(QueryProductDetailsParams.Product.newBuilder()
@@ -124,27 +128,56 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
                 return;
             }
 
-            productDetailsById.clear();
+            subscriptionProductDetails = null;
+            lifetimeProductDetails = null;
+            subscriptionOfferByBasePlanId.clear();
+
             for(ProductDetails details : productDetailsList) {
-                productDetailsById.put(details.getProductId(), details);
+                if( details.getProductType().equals(BillingClient.ProductType.SUBS)
+                        && details.getProductId().equals(getString(R.string.billing_product_subscription)) ) {
+                    subscriptionProductDetails = details;
+                    cacheSubscriptionOffers(details);
+                }
+                else if( details.getProductType().equals(BillingClient.ProductType.INAPP)
+                        && details.getProductId().equals(getString(R.string.billing_product_lifetime)) ) {
+                    lifetimeProductDetails = details;
+                }
             }
 
             bindPriceToButtons();
         });
     }
 
-    private void bindPriceToButtons() {
-        ProductDetails monthly = productDetailsById.get(getString(R.string.billing_product_monthly));
-        ProductDetails yearly = productDetailsById.get(getString(R.string.billing_product_yearly));
-        ProductDetails lifetime = productDetailsById.get(getString(R.string.billing_product_lifetime));
+    private void cacheSubscriptionOffers(ProductDetails details) {
+        List<ProductDetails.SubscriptionOfferDetails> offers = details.getSubscriptionOfferDetails();
+        if( offers == null ) {
+            return;
+        }
+        for(ProductDetails.SubscriptionOfferDetails offer : offers) {
+            String basePlanId = offer.getBasePlanId();
+            if( basePlanId == null || basePlanId.isEmpty() ) {
+                continue;
+            }
+            if( !subscriptionOfferByBasePlanId.containsKey(basePlanId) ) {
+                subscriptionOfferByBasePlanId.put(basePlanId, offer);
+            }
+        }
+    }
 
-        if( monthly != null ) {
-            String price = getSubscriptionDisplayPrice(monthly);
+    private void bindPriceToButtons() {
+        ProductDetails.SubscriptionOfferDetails monthlyOffer =
+                subscriptionOfferByBasePlanId.get(getString(R.string.billing_subscription_base_plan_monthly));
+        ProductDetails.SubscriptionOfferDetails yearlyOffer =
+                subscriptionOfferByBasePlanId.get(getString(R.string.billing_subscription_base_plan_yearly));
+        ProductDetails lifetime = lifetimeProductDetails;
+
+        if( monthlyOffer != null ) {
+            String price = getSubscriptionDisplayPrice(monthlyOffer);
             monthlyButton.setText(getString(R.string.subscription_buy_monthly_with_price, price));
             monthlyButton.setEnabled(true);
         }
-        if( yearly != null ) {
-            String price = getSubscriptionDisplayPrice(yearly);
+        if( yearlyOffer != null ) {
+            String price = getSubscriptionDisplayPrice(yearlyOffer);
             yearlyButton.setText(getString(R.string.subscription_buy_yearly_with_price, price));
             yearlyButton.setEnabled(true);
         }
@@ -155,13 +188,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         }
     }
 
-    private String getSubscriptionDisplayPrice(ProductDetails details) {
-        List<ProductDetails.SubscriptionOfferDetails> offers = details.getSubscriptionOfferDetails();
-        if( offers == null || offers.isEmpty() ) {
-            return "";
-        }
-
-        ProductDetails.SubscriptionOfferDetails offer = offers.get(0);
+    private String getSubscriptionDisplayPrice(ProductDetails.SubscriptionOfferDetails offer) {
         List<ProductDetails.PricingPhase> phases = offer.getPricingPhases().getPricingPhaseList();
         if( phases == null || phases.isEmpty() ) {
             return "";
@@ -171,25 +198,38 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         return lastPhase.getFormattedPrice();
     }
 
-    private void launchPurchase(String productId, String productType) {
-        ProductDetails details = productDetailsById.get(productId);
-        if( details == null ) {
+    private void launchSubscriptionPurchase(String basePlanId) {
+        if( subscriptionProductDetails == null ) {
+            statusText.setText(R.string.subscription_status_products_failed);
+            return;
+        }
+
+        ProductDetails.SubscriptionOfferDetails offerDetails = subscriptionOfferByBasePlanId.get(basePlanId);
+        if( offerDetails == null ) {
             statusText.setText(R.string.subscription_status_products_failed);
             return;
         }
 
         BillingFlowParams.ProductDetailsParams.Builder paramsBuilder = BillingFlowParams.ProductDetailsParams.newBuilder()
-                .setProductDetails(details);
+                .setProductDetails(subscriptionProductDetails)
+                .setOfferToken(offerDetails.getOfferToken());
 
-        if( BillingClient.ProductType.SUBS.equals(productType) ) {
-            List<ProductDetails.SubscriptionOfferDetails> offers = details.getSubscriptionOfferDetails();
-            if( offers == null || offers.isEmpty() ) {
-                statusText.setText(R.string.subscription_status_products_failed);
-                return;
-            }
-            paramsBuilder.setOfferToken(offers.get(0).getOfferToken());
+        launchBilling(paramsBuilder);
+    }
+
+    private void launchLifetimePurchase() {
+        if( lifetimeProductDetails == null ) {
+            statusText.setText(R.string.subscription_status_products_failed);
+            return;
         }
 
+        BillingFlowParams.ProductDetailsParams.Builder paramsBuilder = BillingFlowParams.ProductDetailsParams.newBuilder()
+                .setProductDetails(lifetimeProductDetails);
+
+        launchBilling(paramsBuilder);
+    }
+
+    private void launchBilling(BillingFlowParams.ProductDetailsParams.Builder paramsBuilder) {
         BillingFlowParams flowParams = BillingFlowParams.newBuilder()
                 .setProductDetailsParamsList(java.util.Collections.singletonList(paramsBuilder.build()))
                 .build();
@@ -277,8 +317,9 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     }
 
     private boolean isEntitlementProduct(String productId) {
-        return productId.equals(getString(R.string.billing_product_monthly))
-                || productId.equals(getString(R.string.billing_product_yearly))
+        return productId.equals(getString(R.string.billing_product_subscription))
+                || productId.equals(getString(R.string.billing_product_monthly_legacy))
+                || productId.equals(getString(R.string.billing_product_yearly_legacy))
                 || productId.equals(getString(R.string.billing_product_lifetime));
     }
 
@@ -305,6 +346,9 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
                     if( updateStatusText ) {
                         statusText.setText(R.string.subscription_status_active);
                     }
+                    if( updateStatusText && containsProductId(purchase, getString(R.string.billing_product_lifetime)) ) {
+                        maybePromptManageSubscriptionAfterLifetimePurchase();
+                    }
                 }
 
                 if( !purchase.isAcknowledged() ) {
@@ -323,5 +367,54 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
                 statusText.setText(R.string.subscription_status_pending);
             }
         }
+    }
+
+    private boolean containsProductId(Purchase purchase, String productId) {
+        for(String purchasedProductId : purchase.getProducts()) {
+            if( purchasedProductId.equals(productId) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void maybePromptManageSubscriptionAfterLifetimePurchase() {
+        if( lifetimeManagePromptShown || billingClient == null ) {
+            return;
+        }
+
+        billingClient.queryPurchasesAsync(
+                QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build(),
+                (result, purchases) -> {
+                    if( result.getResponseCode() != BillingClient.BillingResponseCode.OK ) {
+                        return;
+                    }
+                    if( !hasEntitlingPurchase(purchases) ) {
+                        return;
+                    }
+                    runOnUiThread(this::showManageSubscriptionDialog);
+                }
+        );
+    }
+
+    private void showManageSubscriptionDialog() {
+        if( lifetimeManagePromptShown || isFinishing() ) {
+            return;
+        }
+        lifetimeManagePromptShown = true;
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.subscription_lifetime_manage_title)
+                .setMessage(R.string.subscription_lifetime_manage_message)
+                .setNegativeButton(R.string.subscription_lifetime_manage_later, (dialog, which) -> {
+                    // no-op
+                })
+                .setPositiveButton(R.string.subscription_lifetime_manage_action, (dialog, which) -> openPlaySubscriptionManagement())
+                .show();
+    }
+
+    private void openPlaySubscriptionManagement() {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(PLAY_SUBSCRIPTIONS_URL + getPackageName()));
+        startActivity(intent);
     }
 }

@@ -1239,9 +1239,16 @@ After enabling, open a recorded video from the Gallery button to launch the inte
     <string name="subscription_status_restored">Purchase state refreshed.</string>
     <string name="subscription_status_error">Billing error: %1$s</string>
     <string name="subscription_status_error_with_code">Billing error (%1$d): %2$s</string>
+    <string name="subscription_lifetime_manage_title">Cancel active subscription?</string>
+    <string name="subscription_lifetime_manage_message">Lifetime unlock is active. If you also have an active monthly or yearly subscription, cancel it in Google Play to avoid future renewals.</string>
+    <string name="subscription_lifetime_manage_action">Manage in Google Play</string>
+    <string name="subscription_lifetime_manage_later">Later</string>
 
-    <string name="billing_product_monthly" translatable="false">photofinish_monthly</string>
-    <string name="billing_product_yearly" translatable="false">photofinish_yearly</string>
+    <string name="billing_product_subscription" translatable="false">photofinish_pro</string>
+    <string name="billing_subscription_base_plan_monthly" translatable="false">monthly</string>
+    <string name="billing_subscription_base_plan_yearly" translatable="false">yearly</string>
+    <string name="billing_product_monthly_legacy" translatable="false">photofinish_monthly</string>
+    <string name="billing_product_yearly_legacy" translatable="false">photofinish_yearly</string>
     <string name="billing_product_lifetime" translatable="false">photofinish_lifetime</string>
 
     <!-- Replace with your production AdMob ad unit IDs before release. -->
