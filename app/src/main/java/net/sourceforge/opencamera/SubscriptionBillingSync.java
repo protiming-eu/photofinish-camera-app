@@ -117,8 +117,9 @@ public class SubscriptionBillingSync {
             }
 
             private boolean isEntitlementProduct(Context context, String productId) {
-                return productId.equals(context.getString(R.string.billing_product_monthly))
-                        || productId.equals(context.getString(R.string.billing_product_yearly))
+                return productId.equals(context.getString(R.string.billing_product_subscription))
+                        || productId.equals(context.getString(R.string.billing_product_monthly_legacy))
+                        || productId.equals(context.getString(R.string.billing_product_yearly_legacy))
                         || productId.equals(context.getString(R.string.billing_product_lifetime));
             }
 
