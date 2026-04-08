@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="subscription_offer_launch">7-day free trial, then 5 EUR/month or 10 EUR/year. Lifetime unlock: 30 EUR one-time.</string>
+    <string name="subscription_offer_launch"></string>
 </resources>
