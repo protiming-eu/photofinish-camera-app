@@ -37,7 +37,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     private Button monthlyButton;
     private Button yearlyButton;
     private Button lifetimeButton;
-    private Button restoreButton;
+    private TextView subtitleText;
     private TextView statusText;
 
     private ProductDetails subscriptionProductDetails;
@@ -58,17 +58,17 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         monthlyButton = findViewById(R.id.btn_buy_monthly);
         yearlyButton = findViewById(R.id.btn_buy_yearly);
         lifetimeButton = findViewById(R.id.btn_buy_lifetime);
-        restoreButton = findViewById(R.id.btn_restore_purchases);
+        subtitleText = findViewById(R.id.tv_subscription_subtitle);
         statusText = findViewById(R.id.tv_billing_status);
 
         monthlyButton.setEnabled(false);
         yearlyButton.setEnabled(false);
         lifetimeButton.setEnabled(false);
+        subtitleText.setVisibility(View.GONE);
 
         monthlyButton.setOnClickListener(v -> launchSubscriptionPurchase(getString(R.string.billing_subscription_base_plan_monthly)));
         yearlyButton.setOnClickListener(v -> launchSubscriptionPurchase(getString(R.string.billing_subscription_base_plan_yearly)));
         lifetimeButton.setOnClickListener(v -> launchLifetimePurchase());
-        restoreButton.setOnClickListener(v -> refreshPurchases(true));
 
         connectBilling();
     }
@@ -170,22 +170,57 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         ProductDetails.SubscriptionOfferDetails yearlyOffer =
                 subscriptionOfferByBasePlanId.get(getString(R.string.billing_subscription_base_plan_yearly));
         ProductDetails lifetime = lifetimeProductDetails;
+        String monthlyPrice = null;
+        String yearlyPrice = null;
+        String lifetimePrice = null;
 
         if( monthlyOffer != null ) {
-            String price = getSubscriptionDisplayPrice(monthlyOffer);
-            monthlyButton.setText(getString(R.string.subscription_buy_monthly_with_price, price));
+            monthlyPrice = getSubscriptionDisplayPrice(monthlyOffer);
+            monthlyButton.setText(getString(R.string.subscription_buy_monthly_with_price, monthlyPrice));
             monthlyButton.setEnabled(true);
         }
         if( yearlyOffer != null ) {
-            String price = getSubscriptionDisplayPrice(yearlyOffer);
-            yearlyButton.setText(getString(R.string.subscription_buy_yearly_with_price, price));
+            yearlyPrice = getSubscriptionDisplayPrice(yearlyOffer);
+            yearlyButton.setText(getString(R.string.subscription_buy_yearly_with_price, yearlyPrice));
             yearlyButton.setEnabled(true);
         }
         if( lifetime != null && lifetime.getOneTimePurchaseOfferDetails() != null ) {
-            String price = lifetime.getOneTimePurchaseOfferDetails().getFormattedPrice();
-            lifetimeButton.setText(getString(R.string.subscription_buy_lifetime_with_price, price));
+            lifetimePrice = lifetime.getOneTimePurchaseOfferDetails().getFormattedPrice();
+            lifetimeButton.setText(getString(R.string.subscription_buy_lifetime_with_price, lifetimePrice));
             lifetimeButton.setEnabled(true);
         }
+
+        bindLocalizedOfferText(monthlyPrice, yearlyPrice, lifetimePrice);
+    }
+
+    private void bindLocalizedOfferText(String monthlyPrice, String yearlyPrice, String lifetimePrice) {
+        List<String> parts = new ArrayList<>();
+        if( monthlyPrice != null && !monthlyPrice.isEmpty() ) {
+            parts.add(getString(R.string.subscription_offer_price_monthly, monthlyPrice));
+        }
+        if( yearlyPrice != null && !yearlyPrice.isEmpty() ) {
+            parts.add(getString(R.string.subscription_offer_price_yearly, yearlyPrice));
+        }
+        if( lifetimePrice != null && !lifetimePrice.isEmpty() ) {
+            parts.add(getString(R.string.subscription_offer_price_lifetime, lifetimePrice));
+        }
+
+        if( parts.isEmpty() ) {
+            subtitleText.setVisibility(View.GONE);
+            return;
+        }
+
+        String separator = getString(R.string.subscription_offer_price_separator);
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < parts.size(); i++) {
+            if( i > 0 ) {
+                builder.append(separator);
+            }
+            builder.append(parts.get(i));
+        }
+
+        subtitleText.setText(builder.toString());
+        subtitleText.setVisibility(View.VISIBLE);
     }
 
     private String getSubscriptionDisplayPrice(ProductDetails.SubscriptionOfferDetails offer) {

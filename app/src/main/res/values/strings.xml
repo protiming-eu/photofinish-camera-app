@@ -1227,7 +1227,10 @@ After enabling, open a recorded video from the Gallery button to launch the inte
     <string name="subscription_buy_monthly_with_price">Monthly plan - %1$s</string>
     <string name="subscription_buy_yearly_with_price">Yearly plan - %1$s</string>
     <string name="subscription_buy_lifetime_with_price">Lifetime unlock - %1$s</string>
-    <string name="subscription_restore">Restore purchases</string>
+    <string name="subscription_offer_price_monthly">Monthly: %1$s</string>
+    <string name="subscription_offer_price_yearly">Yearly: %1$s</string>
+    <string name="subscription_offer_price_lifetime">Lifetime: %1$s</string>
+    <string name="subscription_offer_price_separator" translatable="false"> | </string>
     <string name="subscription_status_loading">Connecting to Google Play Billing...</string>
     <string name="subscription_status_ready">Billing ready.</string>
     <string name="subscription_status_unavailable">Google Play Billing unavailable.</string>
@@ -1246,7 +1249,7 @@ After enabling, open a recorded video from the Gallery button to launch the inte
 
     <string name="billing_product_subscription" translatable="false">photofinish_pro</string>
     <string name="billing_subscription_base_plan_monthly" translatable="false">monthly</string>
-    <string name="billing_subscription_base_plan_yearly" translatable="false">yearly</string>
+    <string name="billing_subscription_base_plan_yearly" translatable="false">yearly-v2</string>
     <string name="billing_product_monthly_legacy" translatable="false">photofinish_monthly</string>
     <string name="billing_product_yearly_legacy" translatable="false">photofinish_yearly</string>
     <string name="billing_product_lifetime" translatable="false">photofinish_lifetime</string>

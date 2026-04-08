@@ -118,15 +118,6 @@
             android:background="@drawable/launcher_button_secondary"
             android:textColor="#FFFFFF" />
 
-        <Button
-            android:id="@+id/btn_restore_purchases"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/subscription_restore"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/launcher_button_secondary"
-            android:textColor="#FFFFFF" />
-
         <TextView
             android:id="@+id/tv_billing_status"
             android:layout_width="match_parent"

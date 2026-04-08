@@ -100,8 +100,14 @@ public class LauncherActivity extends Activity {
         }
 
         if( BuildConfig.SHOW_SUBSCRIPTION_OFFER ) {
-            subscriptionOffer.setVisibility(View.VISIBLE);
-            subscriptionOffer.setText(getString(R.string.subscription_offer_launch));
+            String offerText = getString(R.string.subscription_offer_launch);
+            if( offerText.trim().isEmpty() ) {
+                subscriptionOffer.setVisibility(View.GONE);
+            }
+            else {
+                subscriptionOffer.setText(offerText);
+                subscriptionOffer.setVisibility(View.VISIBLE);
+            }
             btnSubscription.setVisibility(View.VISIBLE);
             btnSubscription.setText(hasSubscriptionAccess ? R.string.launcher_subscription_manage_button : R.string.launcher_subscription_button);
         }
