@@ -1236,6 +1236,8 @@ After enabling, open a recorded video from the Gallery button to launch the inte
     <string name="subscription_status_unavailable">Google Play Billing unavailable.</string>
     <string name="subscription_status_reconnecting">Reconnecting to Google Play Billing...</string>
     <string name="subscription_status_products_failed">Could not load product details.</string>
+    <string name="subscription_status_plans_unavailable">Subscription plans are not available for this account yet. Check Play Console base plans and rollout status.</string>
+    <string name="subscription_status_missing_base_plan">Plan not available: %1$s</string>
     <string name="subscription_status_canceled">Purchase canceled.</string>
     <string name="subscription_status_pending">Purchase pending approval.</string>
     <string name="subscription_status_active">Subscription active. Pro features unlocked.</string>

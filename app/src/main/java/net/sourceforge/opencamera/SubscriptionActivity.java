@@ -43,6 +43,9 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     private ProductDetails subscriptionProductDetails;
     private ProductDetails lifetimeProductDetails;
     private final Map<String, ProductDetails.SubscriptionOfferDetails> subscriptionOfferByBasePlanId = new HashMap<>();
+    private final List<ProductDetails.SubscriptionOfferDetails> subscriptionOffers = new ArrayList<>();
+    private ProductDetails.SubscriptionOfferDetails monthlyOfferDetails;
+    private ProductDetails.SubscriptionOfferDetails yearlyOfferDetails;
     private boolean lifetimeManagePromptShown;
 
     @Override
@@ -66,8 +69,8 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         lifetimeButton.setEnabled(false);
         subtitleText.setVisibility(View.GONE);
 
-        monthlyButton.setOnClickListener(v -> launchSubscriptionPurchase(getString(R.string.billing_subscription_base_plan_monthly)));
-        yearlyButton.setOnClickListener(v -> launchSubscriptionPurchase(getString(R.string.billing_subscription_base_plan_yearly)));
+        monthlyButton.setOnClickListener(v -> launchSubscriptionPurchase(monthlyOfferDetails, getString(R.string.billing_subscription_base_plan_monthly)));
+        yearlyButton.setOnClickListener(v -> launchSubscriptionPurchase(yearlyOfferDetails, getString(R.string.billing_subscription_base_plan_yearly)));
         lifetimeButton.setOnClickListener(v -> launchLifetimePurchase());
 
         connectBilling();
@@ -131,6 +134,9 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
             subscriptionProductDetails = null;
             lifetimeProductDetails = null;
             subscriptionOfferByBasePlanId.clear();
+            subscriptionOffers.clear();
+            monthlyOfferDetails = null;
+            yearlyOfferDetails = null;
 
             for(ProductDetails details : productDetailsList) {
                 if( details.getProductType().equals(BillingClient.ProductType.SUBS)
@@ -153,7 +159,9 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         if( offers == null ) {
             return;
         }
+        subscriptionOffers.clear();
         for(ProductDetails.SubscriptionOfferDetails offer : offers) {
+            subscriptionOffers.add(offer);
             String basePlanId = offer.getBasePlanId();
             if( basePlanId == null || basePlanId.isEmpty() ) {
                 continue;
@@ -165,22 +173,33 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     }
 
     private void bindPriceToButtons() {
-        ProductDetails.SubscriptionOfferDetails monthlyOffer =
-                subscriptionOfferByBasePlanId.get(getString(R.string.billing_subscription_base_plan_monthly));
-        ProductDetails.SubscriptionOfferDetails yearlyOffer =
-                subscriptionOfferByBasePlanId.get(getString(R.string.billing_subscription_base_plan_yearly));
+        monthlyButton.setEnabled(false);
+        yearlyButton.setEnabled(false);
+        lifetimeButton.setEnabled(false);
+        monthlyButton.setText(R.string.subscription_buy_monthly);
+        yearlyButton.setText(R.string.subscription_buy_yearly);
+        lifetimeButton.setText(R.string.subscription_buy_lifetime);
+
+        monthlyOfferDetails = resolveSubscriptionOffer(
+                getString(R.string.billing_subscription_base_plan_monthly),
+                "P1M"
+        );
+        yearlyOfferDetails = resolveSubscriptionOffer(
+                getString(R.string.billing_subscription_base_plan_yearly),
+                "P1Y"
+        );
         ProductDetails lifetime = lifetimeProductDetails;
         String monthlyPrice = null;
         String yearlyPrice = null;
         String lifetimePrice = null;
 
-        if( monthlyOffer != null ) {
-            monthlyPrice = getSubscriptionDisplayPrice(monthlyOffer);
+        if( monthlyOfferDetails != null ) {
+            monthlyPrice = getSubscriptionDisplayPrice(monthlyOfferDetails);
             monthlyButton.setText(getString(R.string.subscription_buy_monthly_with_price, monthlyPrice));
             monthlyButton.setEnabled(true);
         }
-        if( yearlyOffer != null ) {
-            yearlyPrice = getSubscriptionDisplayPrice(yearlyOffer);
+        if( yearlyOfferDetails != null ) {
+            yearlyPrice = getSubscriptionDisplayPrice(yearlyOfferDetails);
             yearlyButton.setText(getString(R.string.subscription_buy_yearly_with_price, yearlyPrice));
             yearlyButton.setEnabled(true);
         }
@@ -188,6 +207,10 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
             lifetimePrice = lifetime.getOneTimePurchaseOfferDetails().getFormattedPrice();
             lifetimeButton.setText(getString(R.string.subscription_buy_lifetime_with_price, lifetimePrice));
             lifetimeButton.setEnabled(true);
+        }
+
+        if( monthlyOfferDetails == null || yearlyOfferDetails == null ) {
+            statusText.setText(R.string.subscription_status_plans_unavailable);
         }
 
         bindLocalizedOfferText(monthlyPrice, yearlyPrice, lifetimePrice);
@@ -224,24 +247,48 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     }
 
     private String getSubscriptionDisplayPrice(ProductDetails.SubscriptionOfferDetails offer) {
-        List<ProductDetails.PricingPhase> phases = offer.getPricingPhases().getPricingPhaseList();
-        if( phases == null || phases.isEmpty() ) {
+        ProductDetails.PricingPhase lastPhase = getLastPricingPhase(offer);
+        if( lastPhase == null ) {
             return "";
         }
-
-        ProductDetails.PricingPhase lastPhase = phases.get(phases.size() - 1);
         return lastPhase.getFormattedPrice();
     }
 
-    private void launchSubscriptionPurchase(String basePlanId) {
+    private ProductDetails.PricingPhase getLastPricingPhase(ProductDetails.SubscriptionOfferDetails offer) {
+        if( offer == null || offer.getPricingPhases() == null ) {
+            return null;
+        }
+        List<ProductDetails.PricingPhase> phases = offer.getPricingPhases().getPricingPhaseList();
+        if( phases == null || phases.isEmpty() ) {
+            return null;
+        }
+        return phases.get(phases.size() - 1);
+    }
+
+    private ProductDetails.SubscriptionOfferDetails resolveSubscriptionOffer(String basePlanId, String billingPeriod) {
+        ProductDetails.SubscriptionOfferDetails byBasePlanId = subscriptionOfferByBasePlanId.get(basePlanId);
+        if( byBasePlanId != null ) {
+            return byBasePlanId;
+        }
+
+        for(ProductDetails.SubscriptionOfferDetails offer : subscriptionOffers) {
+            ProductDetails.PricingPhase lastPhase = getLastPricingPhase(offer);
+            if( lastPhase != null && billingPeriod.equals(lastPhase.getBillingPeriod()) ) {
+                return offer;
+            }
+        }
+
+        return null;
+    }
+
+    private void launchSubscriptionPurchase(ProductDetails.SubscriptionOfferDetails offerDetails, String expectedBasePlanId) {
         if( subscriptionProductDetails == null ) {
             statusText.setText(R.string.subscription_status_products_failed);
             return;
         }
 
-        ProductDetails.SubscriptionOfferDetails offerDetails = subscriptionOfferByBasePlanId.get(basePlanId);
         if( offerDetails == null ) {
-            statusText.setText(R.string.subscription_status_products_failed);
+            statusText.setText(getString(R.string.subscription_status_missing_base_plan, expectedBasePlanId));
             return;
         }
 
