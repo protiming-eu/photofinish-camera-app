@@ -47,6 +47,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     private ProductDetails.SubscriptionOfferDetails monthlyOfferDetails;
     private ProductDetails.SubscriptionOfferDetails yearlyOfferDetails;
     private boolean lifetimeManagePromptShown;
+    private boolean hasProductAvailabilityWarning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,10 +128,12 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
 
         billingClient.queryProductDetailsAsync(query, (billingResult, productDetailsList) -> {
             if( billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK ) {
+                hasProductAvailabilityWarning = true;
                 statusText.setText(R.string.subscription_status_products_failed);
                 return;
             }
 
+            hasProductAvailabilityWarning = false;
             subscriptionProductDetails = null;
             lifetimeProductDetails = null;
             subscriptionOfferByBasePlanId.clear();
@@ -209,8 +212,27 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
             lifetimeButton.setEnabled(true);
         }
 
-        if( monthlyOfferDetails == null || yearlyOfferDetails == null ) {
+        if( monthlyOfferDetails == null && yearlyOfferDetails == null ) {
+            hasProductAvailabilityWarning = true;
             statusText.setText(R.string.subscription_status_plans_unavailable);
+        }
+        else if( monthlyOfferDetails == null ) {
+            hasProductAvailabilityWarning = true;
+            statusText.setText(getString(
+                    R.string.subscription_status_missing_base_plan,
+                    getString(R.string.billing_subscription_base_plan_monthly)
+            ));
+        }
+        else if( yearlyOfferDetails == null ) {
+            hasProductAvailabilityWarning = true;
+            statusText.setText(getString(
+                    R.string.subscription_status_missing_base_plan,
+                    getString(R.string.billing_subscription_base_plan_yearly)
+            ));
+        }
+        else {
+            hasProductAvailabilityWarning = false;
+            statusText.setText(R.string.subscription_status_ready);
         }
 
         bindLocalizedOfferText(monthlyPrice, yearlyPrice, lifetimePrice);
@@ -360,7 +382,9 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
                     subsDone[0] = true;
                     if( subsDone[0] && inAppDone[0] ) {
                         AccessControl.setSubscriptionAccess(this, hasAccess[0]);
-                        statusText.setText(fromRestoreButton ? R.string.subscription_status_restored : R.string.subscription_status_ready);
+                        if( !hasProductAvailabilityWarning ) {
+                            statusText.setText(fromRestoreButton ? R.string.subscription_status_restored : R.string.subscription_status_ready);
+                        }
                     }
                 }
         );
@@ -375,7 +399,9 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
                     inAppDone[0] = true;
                     if( subsDone[0] && inAppDone[0] ) {
                         AccessControl.setSubscriptionAccess(this, hasAccess[0]);
-                        statusText.setText(fromRestoreButton ? R.string.subscription_status_restored : R.string.subscription_status_ready);
+                        if( !hasProductAvailabilityWarning ) {
+                            statusText.setText(fromRestoreButton ? R.string.subscription_status_restored : R.string.subscription_status_ready);
+                        }
                     }
                 }
         );
