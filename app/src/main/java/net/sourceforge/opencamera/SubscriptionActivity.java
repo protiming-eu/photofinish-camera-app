@@ -114,14 +114,15 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     }
 
     private void queryProductDetails() {
+        querySubscriptionProductDetails();
+        queryLifetimeProductDetails();
+    }
+
+    private void querySubscriptionProductDetails() {
         List<QueryProductDetailsParams.Product> productList = new ArrayList<>();
         productList.add(QueryProductDetailsParams.Product.newBuilder()
                 .setProductId(getString(R.string.billing_product_subscription))
                 .setProductType(BillingClient.ProductType.SUBS)
-                .build());
-        productList.add(QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(getString(R.string.billing_product_lifetime))
-                .setProductType(BillingClient.ProductType.INAPP)
                 .build());
 
         QueryProductDetailsParams query = QueryProductDetailsParams.newBuilder()
@@ -135,9 +136,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
                 return;
             }
 
-            hasProductAvailabilityWarning = false;
             subscriptionProductDetails = null;
-            lifetimeProductDetails = null;
             subscriptionOfferByBasePlanId.clear();
             subscriptionOffers.clear();
             monthlyOfferDetails = null;
@@ -148,10 +147,39 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
                         && details.getProductId().equals(getString(R.string.billing_product_subscription)) ) {
                     subscriptionProductDetails = details;
                     cacheSubscriptionOffers(details);
+                    break;
                 }
-                else if( details.getProductType().equals(BillingClient.ProductType.INAPP)
-                        && details.getProductId().equals(getString(R.string.billing_product_lifetime)) ) {
+            }
+
+            bindPriceToButtons();
+        }));
+    }
+
+    private void queryLifetimeProductDetails() {
+        List<QueryProductDetailsParams.Product> productList = new ArrayList<>();
+        productList.add(QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(getString(R.string.billing_product_lifetime))
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build());
+
+        QueryProductDetailsParams query = QueryProductDetailsParams.newBuilder()
+                .setProductList(productList)
+                .build();
+
+        billingClient.queryProductDetailsAsync(query, (billingResult, productDetailsList) -> runOnUiThread(() -> {
+            if( billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK ) {
+                lifetimeProductDetails = null;
+                bindPriceToButtons();
+                return;
+            }
+
+            lifetimeProductDetails = null;
+            for(ProductDetails details : productDetailsList) {
+                if( details.getProductType().equals(BillingClient.ProductType.INAPP)
+                        && details.getProductId().equals(getString(R.string.billing_product_lifetime))
+                        && details.getOneTimePurchaseOfferDetails() != null ) {
                     lifetimeProductDetails = details;
+                    break;
                 }
             }
 
