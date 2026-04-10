@@ -94,19 +94,21 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         billingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(BillingResult billingResult) {
-                if( billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK ) {
-                    statusText.setText(R.string.subscription_status_ready);
-                    queryProductDetails();
-                    refreshPurchases(false);
-                }
-                else {
-                    statusText.setText(R.string.subscription_status_unavailable);
-                }
+                runOnUiThread(() -> {
+                    if( billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK ) {
+                        statusText.setText(R.string.subscription_status_ready);
+                        queryProductDetails();
+                        refreshPurchases(false);
+                    }
+                    else {
+                        statusText.setText(R.string.subscription_status_unavailable);
+                    }
+                });
             }
 
             @Override
             public void onBillingServiceDisconnected() {
-                statusText.setText(R.string.subscription_status_reconnecting);
+                runOnUiThread(() -> statusText.setText(R.string.subscription_status_reconnecting));
             }
         });
     }
@@ -126,7 +128,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
                 .setProductList(productList)
                 .build();
 
-        billingClient.queryProductDetailsAsync(query, (billingResult, productDetailsList) -> {
+        billingClient.queryProductDetailsAsync(query, (billingResult, productDetailsList) -> runOnUiThread(() -> {
             if( billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK ) {
                 hasProductAvailabilityWarning = true;
                 statusText.setText(R.string.subscription_status_products_failed);
@@ -154,7 +156,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
             }
 
             bindPriceToButtons();
-        });
+        }));
     }
 
     private void cacheSubscriptionOffers(ProductDetails details) {
@@ -350,21 +352,23 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
 
     @Override
     public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
-        if( billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null ) {
-            handlePurchases(purchases, true);
-            return;
-        }
+        runOnUiThread(() -> {
+            if( billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null ) {
+                handlePurchases(purchases, true);
+                return;
+            }
 
-        if( billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED ) {
-            statusText.setText(R.string.subscription_status_canceled);
-            return;
-        }
+            if( billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED ) {
+                statusText.setText(R.string.subscription_status_canceled);
+                return;
+            }
 
-        statusText.setText(getString(
-                R.string.subscription_status_error_with_code,
-                billingResult.getResponseCode(),
-                billingResult.getDebugMessage()
-        ));
+            statusText.setText(getString(
+                    R.string.subscription_status_error_with_code,
+                    billingResult.getResponseCode(),
+                    billingResult.getDebugMessage()
+            ));
+        });
     }
 
     private void refreshPurchases(boolean fromRestoreButton) {
@@ -374,7 +378,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
 
         billingClient.queryPurchasesAsync(
                 QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build(),
-                (result, purchases) -> {
+                (result, purchases) -> runOnUiThread(() -> {
                     if( result.getResponseCode() == BillingClient.BillingResponseCode.OK ) {
                         hasAccess[0] = hasAccess[0] || hasEntitlingPurchase(purchases);
                         handlePurchases(purchases, false);
@@ -386,12 +390,12 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
                             statusText.setText(fromRestoreButton ? R.string.subscription_status_restored : R.string.subscription_status_ready);
                         }
                     }
-                }
+                })
         );
 
         billingClient.queryPurchasesAsync(
                 QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(),
-                (result, purchases) -> {
+                (result, purchases) -> runOnUiThread(() -> {
                     if( result.getResponseCode() == BillingClient.BillingResponseCode.OK ) {
                         hasAccess[0] = hasAccess[0] || hasEntitlingPurchase(purchases);
                         handlePurchases(purchases, false);
@@ -403,7 +407,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
                             statusText.setText(fromRestoreButton ? R.string.subscription_status_restored : R.string.subscription_status_ready);
                         }
                     }
-                }
+                })
         );
     }
 
