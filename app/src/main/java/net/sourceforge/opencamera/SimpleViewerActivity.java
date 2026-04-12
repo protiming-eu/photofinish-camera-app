@@ -7,6 +7,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -43,6 +46,17 @@ public class SimpleViewerActivity extends Activity {
     private boolean controlsVisible = true;
     private Handler updateHandler;
     private Runnable updateRunnable;
+    private ScaleGestureDetector scaleGestureDetector;
+    private GestureDetector gestureDetector;
+    private float currentZoom = 1.0f;
+    private static final float MIN_ZOOM = 1.0f;
+    private static final float MAX_ZOOM = 4.0f;
+    private static final float DRAG_THRESHOLD_PX = 8.0f;
+    private float currentTranslationX = 0.0f;
+    private float currentTranslationY = 0.0f;
+    private float lastTouchX = 0.0f;
+    private float lastTouchY = 0.0f;
+    private boolean hasDragged = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,9 +80,82 @@ public class SimpleViewerActivity extends Activity {
         playerView.setPlayer(player);
         playerView.setControllerAutoShow(false);
         playerView.setUseController(false);
-        
-        // Tap to toggle controls
-        playerView.setOnClickListener(v -> toggleControlsVisibility());
+
+        scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                float oldZoom = currentZoom;
+                float newZoom = oldZoom * detector.getScaleFactor();
+                newZoom = Math.max(MIN_ZOOM, Math.min(newZoom, MAX_ZOOM));
+
+                if( oldZoom > 0.0f && playerView.getWidth() > 0 && playerView.getHeight() > 0 ) {
+                    float centerX = playerView.getWidth() / 2.0f;
+                    float centerY = playerView.getHeight() / 2.0f;
+                    float focusX = detector.getFocusX();
+                    float focusY = detector.getFocusY();
+                    float zoomRatio = newZoom / oldZoom;
+
+                    // Keep pinch focus point stable on screen while zooming.
+                    currentTranslationX = focusX - centerX - zoomRatio * (focusX - centerX - currentTranslationX);
+                    currentTranslationY = focusY - centerY - zoomRatio * (focusY - centerY - currentTranslationY);
+                }
+
+                currentZoom = newZoom;
+                clampTranslation();
+                applyZoom();
+                return true;
+            }
+        });
+
+        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                toggleControlsVisibility();
+                return true;
+            }
+
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                if( currentZoom > MIN_ZOOM ) {
+                    resetZoomAndPan();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        playerView.setOnTouchListener((v, event) -> {
+            scaleGestureDetector.onTouchEvent(event);
+            gestureDetector.onTouchEvent(event);
+
+            switch(event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    lastTouchX = event.getX();
+                    lastTouchY = event.getY();
+                    hasDragged = false;
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if( event.getPointerCount() == 1 && currentZoom > MIN_ZOOM && !scaleGestureDetector.isInProgress() ) {
+                        float x = event.getX();
+                        float y = event.getY();
+                        float deltaX = x - lastTouchX;
+                        float deltaY = y - lastTouchY;
+                        currentTranslationX += deltaX;
+                        currentTranslationY += deltaY;
+                        clampTranslation();
+                        applyZoom();
+                        lastTouchX = x;
+                        lastTouchY = y;
+                        if( Math.abs(deltaX) > DRAG_THRESHOLD_PX || Math.abs(deltaY) > DRAG_THRESHOLD_PX ) {
+                            hasDragged = true;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return true;
+        });
         
         // Check if video URI was provided via Intent
         Intent intent = getIntent();
@@ -231,6 +318,33 @@ public class SimpleViewerActivity extends Activity {
             controlsLayout.setVisibility(View.GONE);
             tvFrameInfo.setVisibility(View.GONE);
         }
+    }
+
+    private void applyZoom() {
+        if( currentZoom <= MIN_ZOOM ) {
+            currentTranslationX = 0.0f;
+            currentTranslationY = 0.0f;
+        }
+
+        playerView.setScaleX(currentZoom);
+        playerView.setScaleY(currentZoom);
+        playerView.setTranslationX(currentTranslationX);
+        playerView.setTranslationY(currentTranslationY);
+    }
+
+    private void resetZoomAndPan() {
+        currentZoom = MIN_ZOOM;
+        currentTranslationX = 0.0f;
+        currentTranslationY = 0.0f;
+        applyZoom();
+    }
+
+    private void clampTranslation() {
+        float maxTranslationX = (playerView.getWidth() * (currentZoom - 1.0f)) / 2.0f;
+        float maxTranslationY = (playerView.getHeight() * (currentZoom - 1.0f)) / 2.0f;
+
+        currentTranslationX = Math.max(-maxTranslationX, Math.min(currentTranslationX, maxTranslationX));
+        currentTranslationY = Math.max(-maxTranslationY, Math.min(currentTranslationY, maxTranslationY));
     }
     
     private void startUpdateLoop() {

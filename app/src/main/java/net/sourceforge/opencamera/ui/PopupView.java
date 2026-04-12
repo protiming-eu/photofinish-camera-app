@@ -73,6 +73,8 @@ public class PopupView extends LinearLayout {
     private int repeat_mode_index = -1;
     private int grid_index = -1;
 
+    private static final float[] SLOW_MOTION_CAPTURE_RATES_TO_CHECK = new float[]{1.0f/8.0f, 1.0f/4.0f, 1.0f/2.0f};
+
     @SuppressWarnings("FieldCanBeLocal")
     private final DecimalFormat decimal_format_1dp_force0 = new DecimalFormat("0.0");
 
@@ -753,6 +755,12 @@ public class PopupView extends LinearLayout {
             }
 
             if( preview.isVideo() ) {
+                List<String> blocked_slow_motion_rates = getBlockedSlowMotionRates(sharedPreferences, preview.getCameraId(), main_activity.getApplicationInterface().getCameraIdSPhysicalPref());
+                if( !blocked_slow_motion_rates.isEmpty() ) {
+                    String blocked_rates = android.text.TextUtils.join(", ", blocked_slow_motion_rates);
+                    addInfoToPopup(getResources().getString(R.string.slow_motion_rates_hidden_runtime, blocked_rates));
+                }
+
                 final List<Float> capture_rate_values = main_activity.getApplicationInterface().getSupportedVideoCaptureRates();
                 if( capture_rate_values.size() > 1 ) {
                     if( MyDebug.LOG )
@@ -1564,6 +1572,28 @@ public class PopupView extends LinearLayout {
         this.addView(text_view);
         if( MyDebug.LOG )
             Log.d(TAG, "addTitleToPopup time: " + (System.nanoTime() - debug_time));
+    }
+
+    private List<String> getBlockedSlowMotionRates(SharedPreferences sharedPreferences, int cameraId, String cameraIdSPhysical) {
+        List<String> blocked_rates = new ArrayList<>();
+        for(float capture_rate_factor : SLOW_MOTION_CAPTURE_RATES_TO_CHECK) {
+            String key = PreferenceKeys.getVideoCaptureRateUnsupportedPreferenceKey(cameraId, cameraIdSPhysical, capture_rate_factor);
+            if( sharedPreferences.getBoolean(key, false) ) {
+                blocked_rates.add(capture_rate_factor + "x");
+            }
+        }
+        return blocked_rates;
+    }
+
+    private void addInfoToPopup(final String info) {
+        @SuppressLint("InflateParams")
+        final View view = LayoutInflater.from(this.getContext()).inflate(R.layout.popupview_textview, null);
+        final TextView text_view = view.findViewById(R.id.text_view);
+
+        text_view.setText(info);
+        text_view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13.0f);
+        text_view.setTextColor(Color.LTGRAY);
+        this.addView(view);
     }
 
     private abstract static class RadioOptionsListener {

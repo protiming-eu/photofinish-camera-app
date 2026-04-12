@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/shutter_icon_pressed"/>
+            <corners android:radius="12dp"/>
+        </shape>
+    </item>
+    <item
+        android:left="28dp"
+        android:top="28dp"
+        android:right="28dp"
+        android:bottom="28dp"
+        android:drawable="@drawable/ic_camera"
+        />
+</layer-list>

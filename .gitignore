@@ -10,8 +10,10 @@ _saved/
 tmp/
 .gradle/
 /play-store-assets/
+app/photofinish-upload.jks
 .idea/*
 !.idea/inspectionProfiles
+
 
 build/
 app/release/
@@ -24,4 +26,5 @@ testdata/
 *.ap_
 
 local.properties
+gradle.properties
 uninstall.bat

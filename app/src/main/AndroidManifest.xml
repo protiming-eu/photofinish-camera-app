@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:versionCode="93"
-    android:versionName="1.55"
+    android:versionCode="105"
+    android:versionName="1.1.4"
     android:installLocation="auto"
     tools:ignore="GoogleAppIndexingWarning">
     <!-- ignore GoogleAppIndexingWarning as we don't want to implement that -->
@@ -26,6 +26,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.microphone" />
@@ -39,6 +40,10 @@
         android:theme="@style/AppTheme"
         android:largeHeap="true"
         >
+        <!-- AdMob App ID is provided by Gradle manifest placeholder (PHOTOFINISH_ADMOB_APP_ID). -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
         <!-- Launcher Activity - entry point with Camera/Viewer choice -->
         <activity
             android:name="net.sourceforge.opencamera.LauncherActivity"
@@ -133,6 +138,12 @@
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             >
         </activity>
+
+        <activity
+            android:name="net.sourceforge.opencamera.SubscriptionActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            />
         
         <!-- should not change the android:name, including moving to a subpackage - see http://android-developers.blogspot.co.uk/2011/06/things-that-cannot-change.html -->
         <receiver

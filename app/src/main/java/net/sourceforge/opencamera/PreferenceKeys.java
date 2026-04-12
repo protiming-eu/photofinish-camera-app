@@ -335,6 +335,11 @@ public class PreferenceKeys {
         return "preference_capture_rate_" + getCameraIDKey(cameraId, cameraIdSPhysical);
     }
 
+    public static String getVideoCaptureRateUnsupportedPreferenceKey(int cameraId, String cameraIdSPhysical, float captureRateFactor) {
+        int capture_rate_scaled = Math.round(captureRateFactor * 1000.0f);
+        return "preference_capture_rate_unsupported_" + getCameraIDKey(cameraId, cameraIdSPhysical) + "_" + capture_rate_scaled;
+    }
+
     public static final String VideoLogPreferenceKey = "preference_video_log";
 
     public static final String VideoProfileGammaPreferenceKey = "preference_video_profile_gamma";

@@ -31,7 +31,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Photo Finish\nCamera"
+                android:text="@string/launcher_title_land"
                 android:textSize="18sp"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
@@ -52,7 +52,7 @@
                 android:id="@+id/btn_camera"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=" Camera"
+                android:text="@string/launcher_camera_button"
                 android:textSize="16sp"
                 android:textColor="#FFFFFF"
                 android:padding="18dp"
@@ -67,7 +67,7 @@
                 android:id="@+id/btn_viewer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Frame-by-frame video player"
+                android:text="@string/launcher_viewer_button"
                 android:textSize="16sp"
                 android:textColor="#FFFFFF"
                 android:padding="18dp"
@@ -76,6 +76,38 @@
                 android:drawablePadding="12dp"
                 android:gravity="center"
                 android:maxWidth="400dp" />
+
+            <TextView
+                android:id="@+id/tv_subscription_offer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:textColor="#FFF3E0"
+                android:textSize="13sp"
+                android:text="@string/subscription_offer_launch" />
+
+            <Button
+                android:id="@+id/btn_subscription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/launcher_subscription_button"
+                android:textSize="14sp"
+                android:textColor="#FFFFFF"
+                android:padding="14dp"
+                android:background="@drawable/launcher_button_primary"
+                android:visibility="gone" />
+
+            <com.google.android.gms.ads.AdView
+                xmlns:ads="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/ad_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:visibility="gone"
+                ads:adSize="BANNER"
+                ads:adUnitId="@string/admob_banner_ad_unit_id" />
 
         </LinearLayout>
 
