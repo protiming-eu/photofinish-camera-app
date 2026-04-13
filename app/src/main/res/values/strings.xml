@@ -1219,7 +1219,7 @@ After enabling, open a recorded video from the Gallery button to launch the inte
     <string name="subscription_feature_1">✓  Frame-by-frame video player</string>
     <string name="subscription_feature_2">✓  Manual ISO &amp; shutter speed control</string>
     <string name="subscription_feature_3">✓  Slow-motion at 1/8× and 1/4× speed</string>
-    <string name="subscription_feature_4">✓  Ads free app</string>
+    <string name="subscription_feature_4">✓  Ad-free after purchase</string>
     <string name="subscription_feature_5">✓  All future Pro features</string>
     <string name="subscription_buy_monthly">Monthly plan</string>
     <string name="subscription_buy_yearly">Yearly plan</string>
@@ -1227,6 +1227,10 @@ After enabling, open a recorded video from the Gallery button to launch the inte
     <string name="subscription_buy_monthly_with_price">Monthly plan - %1$s</string>
     <string name="subscription_buy_yearly_with_price">Yearly plan - %1$s</string>
     <string name="subscription_buy_lifetime_with_price">Lifetime unlock - %1$s</string>
+    <string name="trial_status_active">Trial active: %1$s remaining</string>
+    <string name="trial_status_days_hours">%1$dd %2$dh</string>
+    <string name="trial_status_hours">%1$dh</string>
+    <string name="trial_status_expired">Trial expired. Unlock Pro features to continue.</string>
     <string name="subscription_offer_price_monthly">Monthly: %1$s</string>
     <string name="subscription_offer_price_yearly">Yearly: %1$s</string>
     <string name="subscription_offer_price_lifetime">Lifetime: %1$s</string>

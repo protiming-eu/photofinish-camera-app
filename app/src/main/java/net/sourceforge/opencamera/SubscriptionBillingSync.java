@@ -26,7 +26,7 @@ public class SubscriptionBillingSync {
     public static void syncEntitlement(Context context, SyncCallback callback) {
         if( !BuildConfig.SHOW_SUBSCRIPTION_OFFER ) {
             if( callback != null ) {
-                callback.onCompleted(AccessControl.hasSubscriptionAccess(context));
+                callback.onCompleted(AccessControl.hasPaidSubscriptionAccess(context));
             }
             return;
         }
@@ -52,7 +52,7 @@ public class SubscriptionBillingSync {
                     }
                     billingClient.endConnection();
                     if( callback != null ) {
-                        callback.onCompleted(AccessControl.hasSubscriptionAccess(appContext));
+                        callback.onCompleted(AccessControl.hasPaidSubscriptionAccess(appContext));
                     }
                     return;
                 }
