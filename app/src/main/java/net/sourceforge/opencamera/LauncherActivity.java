@@ -122,18 +122,20 @@ public class LauncherActivity extends Activity {
             btnSubscription.setVisibility(View.GONE);
         }
 
-        if( BuildConfig.SHOW_SUBSCRIPTION_OFFER && !hasPaidSubscriptionAccess ) {
-            if( hasTrialAccess ) {
-                long trialRemainingMs = AccessControl.getTrialRemainingMs(this);
-                trialStatus.setText(getString(R.string.trial_status_active, formatTrialRemaining(trialRemainingMs)));
+        if( trialStatus != null ) {
+            if( BuildConfig.SHOW_SUBSCRIPTION_OFFER && !hasPaidSubscriptionAccess ) {
+                if( hasTrialAccess ) {
+                    long trialRemainingMs = AccessControl.getTrialRemainingMs(this);
+                    trialStatus.setText(getString(R.string.trial_status_active, formatTrialRemaining(trialRemainingMs)));
+                }
+                else {
+                    trialStatus.setText(R.string.trial_status_expired);
+                }
+                trialStatus.setVisibility(View.VISIBLE);
             }
             else {
-                trialStatus.setText(R.string.trial_status_expired);
+                trialStatus.setVisibility(View.GONE);
             }
-            trialStatus.setVisibility(View.VISIBLE);
-        }
-        else {
-            trialStatus.setVisibility(View.GONE);
         }
 
         if( BuildConfig.SHOW_ADS && !hasPaidSubscriptionAccess ) {
