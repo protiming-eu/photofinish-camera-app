@@ -81,6 +81,17 @@
             android:background="@drawable/launcher_button_primary"
             android:visibility="gone" />
 
+        <TextView
+            android:id="@+id/tv_trial_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:maxWidth="450dp"
+            android:gravity="center"
+            android:textColor="#FFE0B2"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
         <!-- AdMob banner – shown only when user has no subscription -->
         <com.google.android.gms.ads.AdView
             xmlns:ads="http://schemas.android.com/apk/res-auto"

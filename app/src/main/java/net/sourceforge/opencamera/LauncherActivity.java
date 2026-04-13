@@ -16,15 +16,18 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
+import java.util.concurrent.TimeUnit;
+
 public class LauncherActivity extends Activity {
     private static final String PLAY_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions?package=";
 
     private Button btnViewer;
     private Button btnSubscription;
     private TextView subscriptionOffer;
+    private TextView trialStatus;
     private AdView adView;
     private InterstitialAd interstitialAd;
-    private boolean hasSubscriptionAccess;
+    private boolean hasPaidSubscriptionAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,7 @@ public class LauncherActivity extends Activity {
         btnViewer = findViewById(R.id.btn_viewer);
         btnSubscription = findViewById(R.id.btn_subscription);
         subscriptionOffer = findViewById(R.id.tv_subscription_offer);
+        trialStatus = findViewById(R.id.tv_trial_status);
         adView = findViewById(R.id.ad_view);
 
         btnCamera.setOnClickListener(v -> {
@@ -50,7 +54,7 @@ public class LauncherActivity extends Activity {
         });
 
         btnSubscription.setOnClickListener(v -> {
-            if( hasSubscriptionAccess ) {
+            if( hasPaidSubscriptionAccess ) {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(PLAY_SUBSCRIPTIONS_URL + getPackageName()));
                 startActivity(intent);
             }
@@ -60,7 +64,7 @@ public class LauncherActivity extends Activity {
             }
         });
 
-        updateSubscriptionUi(AccessControl.hasSubscriptionAccess(this));
+        updateSubscriptionUi(AccessControl.hasPaidSubscriptionAccess(this));
     }
 
     @Override
@@ -70,7 +74,7 @@ public class LauncherActivity extends Activity {
             SubscriptionBillingSync.syncEntitlement(this, this::updateSubscriptionUi);
         }
         else {
-            updateSubscriptionUi(AccessControl.hasSubscriptionAccess(this));
+            updateSubscriptionUi(AccessControl.hasPaidSubscriptionAccess(this));
         }
         if( adView != null ) adView.resume();
     }
@@ -87,10 +91,12 @@ public class LauncherActivity extends Activity {
         super.onDestroy();
     }
 
-    private void updateSubscriptionUi(boolean hasSubscriptionAccess) {
-        this.hasSubscriptionAccess = hasSubscriptionAccess;
+    private void updateSubscriptionUi(boolean hasPaidSubscriptionAccess) {
+        this.hasPaidSubscriptionAccess = hasPaidSubscriptionAccess;
+        final boolean hasFeatureAccess = AccessControl.hasSubscriptionAccess(this);
+        final boolean hasTrialAccess = AccessControl.hasTrialAccess(this);
 
-        if( hasSubscriptionAccess ) {
+        if( hasFeatureAccess ) {
             btnViewer.setEnabled(true);
             btnViewer.setText(getString(R.string.launcher_viewer_button));
         }
@@ -109,14 +115,28 @@ public class LauncherActivity extends Activity {
                 subscriptionOffer.setVisibility(View.VISIBLE);
             }
             btnSubscription.setVisibility(View.VISIBLE);
-            btnSubscription.setText(hasSubscriptionAccess ? R.string.launcher_subscription_manage_button : R.string.launcher_subscription_button);
+            btnSubscription.setText(hasPaidSubscriptionAccess ? R.string.launcher_subscription_manage_button : R.string.launcher_subscription_button);
         }
         else {
             subscriptionOffer.setVisibility(View.GONE);
             btnSubscription.setVisibility(View.GONE);
         }
 
-        if( BuildConfig.SHOW_ADS && !hasSubscriptionAccess ) {
+        if( BuildConfig.SHOW_SUBSCRIPTION_OFFER && !hasPaidSubscriptionAccess ) {
+            if( hasTrialAccess ) {
+                long trialRemainingMs = AccessControl.getTrialRemainingMs(this);
+                trialStatus.setText(getString(R.string.trial_status_active, formatTrialRemaining(trialRemainingMs)));
+            }
+            else {
+                trialStatus.setText(R.string.trial_status_expired);
+            }
+            trialStatus.setVisibility(View.VISIBLE);
+        }
+        else {
+            trialStatus.setVisibility(View.GONE);
+        }
+
+        if( BuildConfig.SHOW_ADS && !hasPaidSubscriptionAccess ) {
             if( adView != null && adView.getVisibility() != View.VISIBLE ) {
                 adView.setVisibility(View.VISIBLE);
                 adView.loadAd(new AdRequest.Builder().build());
@@ -128,6 +148,16 @@ public class LauncherActivity extends Activity {
             }
             interstitialAd = null;
         }
+    }
+
+    private String formatTrialRemaining(long remainingMs) {
+        long totalHours = Math.max(1L, TimeUnit.MILLISECONDS.toHours(remainingMs + TimeUnit.HOURS.toMillis(1) - 1));
+        long days = totalHours / 24L;
+        long hours = totalHours % 24L;
+        if( days > 0L ) {
+            return getString(R.string.trial_status_days_hours, days, hours);
+        }
+        return getString(R.string.trial_status_hours, hours);
     }
 
     private void maybeLoadInterstitial() {
@@ -155,7 +185,7 @@ public class LauncherActivity extends Activity {
     }
 
     private void showInterstitialThen(Runnable action) {
-        if( !(BuildConfig.SHOW_ADS && !hasSubscriptionAccess) || interstitialAd == null ) {
+        if( !(BuildConfig.SHOW_ADS && !hasPaidSubscriptionAccess) || interstitialAd == null ) {
             action.run();
             return;
         }
