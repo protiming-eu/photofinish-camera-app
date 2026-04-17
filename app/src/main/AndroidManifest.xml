@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:versionCode="107"
-    android:versionName="1.1.6"
+    android:versionCode="108"
+    android:versionName="1.1.7"
     android:installLocation="auto"
     tools:ignore="GoogleAppIndexingWarning">
     <!-- ignore GoogleAppIndexingWarning as we don't want to implement that -->
@@ -141,6 +141,24 @@
 
         <activity
             android:name="net.sourceforge.opencamera.SubscriptionActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            />
+
+        <activity
+            android:name="net.sourceforge.opencamera.QuickStartMenuActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            />
+
+        <activity
+            android:name="net.sourceforge.opencamera.QuickStartDetailActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            />
+
+        <activity
+            android:name="net.sourceforge.opencamera.QuickStartImageActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             />

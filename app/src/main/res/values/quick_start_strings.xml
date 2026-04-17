@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="launcher_quick_start_button">Quick Start Guide</string>
+    <string name="launcher_quick_start_note">Recommended before first race-day use</string>
+
+    <string name="quick_start_menu_title">How to use</string>
+    <string name="quick_start_menu_subtitle">Quick help before recording on race day</string>
+    <string name="quick_start_breadcrumb_format">How to use  &gt;  %1$s</string>
+    <string name="quick_start_back">Back</string>
+    <string name="quick_start_next">Next</string>
+    <string name="quick_start_done">Done</string>
+    <string name="quick_start_tap_to_expand">Tap image to expand</string>
+
+    <string name="quick_start_topic_controls_title">Main camera controls</string>
+    <string name="quick_start_topic_controls_summary">Buttons, focus, zoom and stand-by</string>
+    <string name="quick_start_topic_finishline_title">Finish-line setup</string>
+    <string name="quick_start_topic_finishline_summary">Manual focus, center line and slow motion</string>
+    <string name="quick_start_topic_exposure_title">Exposure setup</string>
+    <string name="quick_start_topic_exposure_summary">Shutter speed and ISO for sharp bibs</string>
+    <string name="quick_start_topic_review_title">Review clips</string>
+    <string name="quick_start_topic_review_summary">Frame-by-frame and zoom on the phone</string>
+
+    <string-array name="quick_start_topic_controls_bullets">
+        <item>The main screen is designed for fast race-day access.</item>
+        <item>General camera settings open from the top-left settings button.</item>
+        <item>Photo Finish settings include focus mode, frame rate and center line options.</item>
+        <item>Shutter speed and ISO are available from the fast exposure button.</item>
+        <item>The stand-by button reduces battery drain and heat between arrivals.</item>
+        <item>The bottom sliders control manual focus and zoom.</item>
+    </string-array>
+
+    <string-array name="quick_start_topic_finishline_bullets">
+        <item>Use manual focus to prevent autofocus hunting.</item>
+        <item>Align the virtual center line with the real finish line.</item>
+        <item>Choose 240 fps when close decisions must be resolved.</item>
+        <item>Lower frame rates are enough when the goal is bib verification only.</item>
+        <item>The center line is visual only and is not burned into the video.</item>
+    </string-array>
+
+    <string-array name="quick_start_topic_exposure_bullets">
+        <item>Fast-moving athletes need fast shutter speed for readable details.</item>
+        <item>For cycling, around 1/1000 s is a good starting point.</item>
+        <item>For running, around 1/800 to 1/1000 s is often suitable.</item>
+        <item>Adjust ISO to available light instead of slowing shutter too much.</item>
+        <item>A slightly darker image is often better than blown highlights.</item>
+    </string-array>
+
+    <string-array name="quick_start_topic_review_bullets">
+        <item>Use the built-in frame-by-frame viewer when no computer is available.</item>
+        <item>Play, step left/right and timeline slider find decisive segments quickly.</item>
+        <item>The frame number and time stay visible during review.</item>
+        <item>Zoom helps inspect very close finish-line crossings and bib numbers.</item>
+        <item>With a computer available, review clips on a larger screen while recording continues.</item>
+    </string-array>
+</resources>
