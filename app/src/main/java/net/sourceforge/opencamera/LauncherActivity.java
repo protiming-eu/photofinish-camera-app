@@ -35,6 +35,7 @@ public class LauncherActivity extends Activity {
         setContentView(R.layout.activity_launcher);
 
         Button btnCamera = findViewById(R.id.btn_camera);
+        Button btnQuickStart = findViewById(R.id.btn_quick_start);
         btnViewer = findViewById(R.id.btn_viewer);
         btnSubscription = findViewById(R.id.btn_subscription);
         subscriptionOffer = findViewById(R.id.tv_subscription_offer);
@@ -52,6 +53,13 @@ public class LauncherActivity extends Activity {
             Intent intent = new Intent(LauncherActivity.this, SimpleViewerActivity.class);
             startActivity(intent);
         });
+
+        if( btnQuickStart != null ) {
+            btnQuickStart.setOnClickListener(v -> {
+                Intent intent = new Intent(LauncherActivity.this, QuickStartMenuActivity.class);
+                startActivity(intent);
+            });
+        }
 
         btnSubscription.setOnClickListener(v -> {
             if( hasPaidSubscriptionAccess ) {

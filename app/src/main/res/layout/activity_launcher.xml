@@ -57,6 +57,21 @@
             android:gravity="center"
             android:maxWidth="450dp" />
 
+        <Button
+            android:id="@+id/btn_quick_start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/launcher_quick_start_button"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:padding="16dp"
+            android:background="@drawable/launcher_button_primary"
+            android:drawableLeft="@drawable/ic_help_outline_white"
+            android:drawablePadding="12dp"
+            android:gravity="center"
+            android:maxWidth="450dp" />
+
         <TextView
             android:id="@+id/tv_subscription_offer"
             android:layout_width="match_parent"
