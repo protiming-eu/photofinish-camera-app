@@ -24,9 +24,7 @@ import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryPurchasesParams;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /** Purchase screen for subscription and lifetime unlock using Google Play Billing. */
 public class SubscriptionActivity extends Activity implements PurchasesUpdatedListener {
@@ -42,7 +40,6 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
 
     private ProductDetails subscriptionProductDetails;
     private ProductDetails lifetimeProductDetails;
-    private final Map<String, ProductDetails.SubscriptionOfferDetails> subscriptionOfferByBasePlanId = new HashMap<>();
     private final List<ProductDetails.SubscriptionOfferDetails> subscriptionOffers = new ArrayList<>();
     private ProductDetails.SubscriptionOfferDetails monthlyOfferDetails;
     private ProductDetails.SubscriptionOfferDetails yearlyOfferDetails;
@@ -137,7 +134,6 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
             }
 
             subscriptionProductDetails = null;
-            subscriptionOfferByBasePlanId.clear();
             subscriptionOffers.clear();
             monthlyOfferDetails = null;
             yearlyOfferDetails = null;
@@ -195,13 +191,6 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         subscriptionOffers.clear();
         for(ProductDetails.SubscriptionOfferDetails offer : offers) {
             subscriptionOffers.add(offer);
-            String basePlanId = offer.getBasePlanId();
-            if( basePlanId == null || basePlanId.isEmpty() ) {
-                continue;
-            }
-            if( !subscriptionOfferByBasePlanId.containsKey(basePlanId) ) {
-                subscriptionOfferByBasePlanId.put(basePlanId, offer);
-            }
         }
     }
 
@@ -299,11 +288,21 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     }
 
     private String getSubscriptionDisplayPrice(ProductDetails.SubscriptionOfferDetails offer) {
-        ProductDetails.PricingPhase lastPhase = getLastPricingPhase(offer);
-        if( lastPhase == null ) {
+        ProductDetails.PricingPhase paidPhase = getPaidPricingPhase(offer);
+        if( paidPhase == null ) {
             return "";
         }
-        return lastPhase.getFormattedPrice();
+
+        ProductDetails.PricingPhase freeTrialPhase = getFreeTrialPhase(offer);
+        if( freeTrialPhase == null ) {
+            return paidPhase.getFormattedPrice();
+        }
+
+        String trialDuration = formatFreeTrialDuration(freeTrialPhase.getBillingPeriod());
+        if( trialDuration == null || trialDuration.isEmpty() ) {
+            return getString(R.string.subscription_free_trial_then_price_without_duration, paidPhase.getFormattedPrice());
+        }
+        return getString(R.string.subscription_free_trial_then_price, trialDuration, paidPhase.getFormattedPrice());
     }
 
     private ProductDetails.PricingPhase getLastPricingPhase(ProductDetails.SubscriptionOfferDetails offer) {
@@ -317,20 +316,110 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         return phases.get(phases.size() - 1);
     }
 
-    private ProductDetails.SubscriptionOfferDetails resolveSubscriptionOffer(String basePlanId, String billingPeriod) {
-        ProductDetails.SubscriptionOfferDetails byBasePlanId = subscriptionOfferByBasePlanId.get(basePlanId);
-        if( byBasePlanId != null ) {
-            return byBasePlanId;
+    private ProductDetails.PricingPhase getPaidPricingPhase(ProductDetails.SubscriptionOfferDetails offer) {
+        if( offer == null || offer.getPricingPhases() == null ) {
+            return null;
+        }
+        List<ProductDetails.PricingPhase> phases = offer.getPricingPhases().getPricingPhaseList();
+        if( phases == null || phases.isEmpty() ) {
+            return null;
         }
 
+        ProductDetails.PricingPhase paidPhase = null;
+        for(ProductDetails.PricingPhase phase : phases) {
+            if( phase.getPriceAmountMicros() > 0L ) {
+                paidPhase = phase;
+            }
+        }
+        if( paidPhase != null ) {
+            return paidPhase;
+        }
+
+        return getLastPricingPhase(offer);
+    }
+
+    private ProductDetails.PricingPhase getFreeTrialPhase(ProductDetails.SubscriptionOfferDetails offer) {
+        if( offer == null || offer.getPricingPhases() == null ) {
+            return null;
+        }
+        List<ProductDetails.PricingPhase> phases = offer.getPricingPhases().getPricingPhaseList();
+        if( phases == null || phases.isEmpty() ) {
+            return null;
+        }
+
+        for(ProductDetails.PricingPhase phase : phases) {
+            if( phase.getPriceAmountMicros() == 0L && phase.getBillingCycleCount() > 0 ) {
+                return phase;
+            }
+        }
+        return null;
+    }
+
+    private boolean hasFreeTrial(ProductDetails.SubscriptionOfferDetails offer) {
+        return getFreeTrialPhase(offer) != null;
+    }
+
+    private String formatFreeTrialDuration(String billingPeriod) {
+        if( billingPeriod == null || billingPeriod.length() < 3 || billingPeriod.charAt(0) != 'P' ) {
+            return null;
+        }
+
+        char unit = billingPeriod.charAt(billingPeriod.length() - 1);
+        String countText = billingPeriod.substring(1, billingPeriod.length() - 1);
+        int count;
+        try {
+            count = Integer.parseInt(countText);
+        }
+        catch(NumberFormatException e) {
+            return null;
+        }
+
+        switch(unit) {
+            case 'D':
+                return getResources().getQuantityString(R.plurals.subscription_free_trial_days, count, count);
+            case 'W':
+                return getResources().getQuantityString(R.plurals.subscription_free_trial_weeks, count, count);
+            case 'M':
+                return getResources().getQuantityString(R.plurals.subscription_free_trial_months, count, count);
+            case 'Y':
+                return getResources().getQuantityString(R.plurals.subscription_free_trial_years, count, count);
+            default:
+                return null;
+        }
+    }
+
+    private ProductDetails.SubscriptionOfferDetails resolveSubscriptionOffer(String basePlanId, String billingPeriod) {
+        ProductDetails.SubscriptionOfferDetails fallbackByBasePlan = null;
         for(ProductDetails.SubscriptionOfferDetails offer : subscriptionOffers) {
-            ProductDetails.PricingPhase lastPhase = getLastPricingPhase(offer);
-            if( lastPhase != null && billingPeriod.equals(lastPhase.getBillingPeriod()) ) {
+            if( !basePlanId.equals(offer.getBasePlanId()) ) {
+                continue;
+            }
+            if( hasFreeTrial(offer) ) {
                 return offer;
+            }
+            if( fallbackByBasePlan == null ) {
+                fallbackByBasePlan = offer;
+            }
+        }
+        if( fallbackByBasePlan != null ) {
+            return fallbackByBasePlan;
+        }
+
+        ProductDetails.SubscriptionOfferDetails fallbackByPeriod = null;
+        for(ProductDetails.SubscriptionOfferDetails offer : subscriptionOffers) {
+            ProductDetails.PricingPhase paidPhase = getPaidPricingPhase(offer);
+            if( paidPhase == null || !billingPeriod.equals(paidPhase.getBillingPeriod()) ) {
+                continue;
+            }
+            if( hasFreeTrial(offer) ) {
+                return offer;
+            }
+            if( fallbackByPeriod == null ) {
+                fallbackByPeriod = offer;
             }
         }
 
-        return null;
+        return fallbackByPeriod;
     }
 
     private void launchSubscriptionPurchase(ProductDetails.SubscriptionOfferDetails offerDetails, String expectedBasePlanId) {

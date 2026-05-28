@@ -16,15 +16,12 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
-import java.util.concurrent.TimeUnit;
-
 public class LauncherActivity extends Activity {
     private static final String PLAY_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions?package=";
 
     private Button btnViewer;
     private Button btnSubscription;
     private TextView subscriptionOffer;
-    private TextView trialStatus;
     private AdView adView;
     private InterstitialAd interstitialAd;
     private boolean hasPaidSubscriptionAccess;
@@ -39,7 +36,6 @@ public class LauncherActivity extends Activity {
         btnViewer = findViewById(R.id.btn_viewer);
         btnSubscription = findViewById(R.id.btn_subscription);
         subscriptionOffer = findViewById(R.id.tv_subscription_offer);
-        trialStatus = findViewById(R.id.tv_trial_status);
         adView = findViewById(R.id.ad_view);
 
         btnCamera.setOnClickListener(v -> {
@@ -102,7 +98,6 @@ public class LauncherActivity extends Activity {
     private void updateSubscriptionUi(boolean hasPaidSubscriptionAccess) {
         this.hasPaidSubscriptionAccess = hasPaidSubscriptionAccess;
         final boolean hasFeatureAccess = AccessControl.hasSubscriptionAccess(this);
-        final boolean hasTrialAccess = AccessControl.hasTrialAccess(this);
 
         if( hasFeatureAccess ) {
             btnViewer.setEnabled(true);
@@ -130,22 +125,6 @@ public class LauncherActivity extends Activity {
             btnSubscription.setVisibility(View.GONE);
         }
 
-        if( trialStatus != null ) {
-            if( BuildConfig.SHOW_SUBSCRIPTION_OFFER && !hasPaidSubscriptionAccess ) {
-                if( hasTrialAccess ) {
-                    long trialRemainingMs = AccessControl.getTrialRemainingMs(this);
-                    trialStatus.setText(getString(R.string.trial_status_active, formatTrialRemaining(trialRemainingMs)));
-                }
-                else {
-                    trialStatus.setText(R.string.trial_status_expired);
-                }
-                trialStatus.setVisibility(View.VISIBLE);
-            }
-            else {
-                trialStatus.setVisibility(View.GONE);
-            }
-        }
-
         if( BuildConfig.SHOW_ADS && !hasPaidSubscriptionAccess ) {
             if( adView != null && adView.getVisibility() != View.VISIBLE ) {
                 adView.setVisibility(View.VISIBLE);
@@ -158,16 +137,6 @@ public class LauncherActivity extends Activity {
             }
             interstitialAd = null;
         }
-    }
-
-    private String formatTrialRemaining(long remainingMs) {
-        long totalHours = Math.max(1L, TimeUnit.MILLISECONDS.toHours(remainingMs + TimeUnit.HOURS.toMillis(1) - 1));
-        long days = totalHours / 24L;
-        long hours = totalHours % 24L;
-        if( days > 0L ) {
-            return getString(R.string.trial_status_days_hours, days, hours);
-        }
-        return getString(R.string.trial_status_hours, hours);
     }
 
     private void maybeLoadInterstitial() {

@@ -796,7 +796,16 @@
     <string name="photo_mode_panorama">Pano</string> <!-- keep short, as this shows in the popup menu; probably shouldn't be translated? -->
     <string name="photo_mode_panorama_full">Panorama</string>
 
-    <string name="preference_screen_remote_control">Bluetooth LE remote control…</string>
+    <string name="preference_screen_remote_control">Remote control…</string>
+    <string name="preference_web_remote_category">Wi-Fi/Web remote control</string>
+    <string name="preference_enable_web_remote">Enable Wi-Fi/Web remote control</string>
+    <string name="preference_enable_web_remote_summary">Control the camera from a browser on another device connected to the same Wi-Fi or hotspot.</string>
+    <string name="preference_web_remote_status">Web remote address</string>
+    <string name="preference_web_remote_status_summary">Enable Wi-Fi/Web remote control to show the address and PIN.</string>
+    <string name="preference_web_remote_pin_summary">PIN: %1$s</string>
+    <string name="preference_web_remote_open_summary">Open on the other device:</string>
+    <string name="preference_web_remote_no_network_summary">Connect this phone and the controller to the same Wi-Fi or phone hotspot.</string>
+    <string name="preference_ble_remote_category">Bluetooth LE remote control</string>
     <string name="preference_enable_remote">Enable Bluetooth LE remote control</string>
     <string name="preference_enable_remote_summary">Enable Bluetooth LE (BLE) remote control devices</string>
     <string name="preference_remote_type">Remote device type</string>
@@ -1227,10 +1236,24 @@ After enabling, open a recorded video from the Gallery button to launch the inte
     <string name="subscription_buy_monthly_with_price">Monthly plan - %1$s</string>
     <string name="subscription_buy_yearly_with_price">Yearly plan - %1$s</string>
     <string name="subscription_buy_lifetime_with_price">Lifetime unlock - %1$s</string>
-    <string name="trial_status_active">Trial active: %1$s remaining</string>
-    <string name="trial_status_days_hours">%1$dd %2$dh</string>
-    <string name="trial_status_hours">%1$dh</string>
-    <string name="trial_status_expired">Trial expired. Unlock Pro features to continue.</string>
+    <string name="subscription_free_trial_then_price">%1$s, then %2$s</string>
+    <string name="subscription_free_trial_then_price_without_duration">Free trial, then %1$s</string>
+    <plurals name="subscription_free_trial_days">
+        <item quantity="one">%1$d-day free trial</item>
+        <item quantity="other">%1$d-day free trial</item>
+    </plurals>
+    <plurals name="subscription_free_trial_weeks">
+        <item quantity="one">%1$d-week free trial</item>
+        <item quantity="other">%1$d-week free trial</item>
+    </plurals>
+    <plurals name="subscription_free_trial_months">
+        <item quantity="one">%1$d-month free trial</item>
+        <item quantity="other">%1$d-month free trial</item>
+    </plurals>
+    <plurals name="subscription_free_trial_years">
+        <item quantity="one">%1$d-year free trial</item>
+        <item quantity="other">%1$d-year free trial</item>
+    </plurals>
     <string name="subscription_offer_price_monthly">Monthly: %1$s</string>
     <string name="subscription_offer_price_yearly">Yearly: %1$s</string>
     <string name="subscription_offer_price_lifetime">Lifetime: %1$s</string>

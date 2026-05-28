@@ -183,6 +183,12 @@ public class PreferenceKeys {
 
     public static final String WaterType = "preference_water_type";
 
+    public static final String EnableWebRemote = "preference_enable_web_remote";
+
+    public static final String WebRemoteStatus = "preference_web_remote_status";
+
+    public static final String WebRemotePin = "preference_web_remote_pin";
+
     //public static final String BackgroundPhotoSavingPreferenceKey = "preference_background_photo_saving";
 
     public static final String Camera2FakeFlashPreferenceKey = "preference_camera2_fake_flash";

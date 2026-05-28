@@ -6,6 +6,7 @@ import net.sourceforge.opencamera.cameracontroller.CameraControllerManager2;
 import net.sourceforge.opencamera.preview.Preview;
 import net.sourceforge.opencamera.preview.VideoProfile;
 import net.sourceforge.opencamera.remotecontrol.BluetoothRemoteControl;
+import net.sourceforge.opencamera.remotecontrol.WebRemoteControl;
 import net.sourceforge.opencamera.ui.DrawPreview;
 import net.sourceforge.opencamera.ui.FolderChooserDialog;
 import net.sourceforge.opencamera.ui.MainUI;
@@ -128,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
 
     // components: always non-null (after onCreate())
     private BluetoothRemoteControl bluetoothRemoteControl;
+    private WebRemoteControl webRemoteControl;
     private PermissionHandler permissionHandler;
     private SettingsManager settingsManager;
     private MainUI mainUI;
@@ -339,6 +341,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
 
         // set up components
         bluetoothRemoteControl = new BluetoothRemoteControl(this);
+        webRemoteControl = new WebRemoteControl(this);
         permissionHandler = new PermissionHandler(this);
         settingsManager = new SettingsManager(this);
         mainUI = new MainUI(this);
@@ -1672,8 +1675,9 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         }
         getWindow().getDecorView().addOnLayoutChangeListener(layoutChangeListener);
 
-        // if BLE remote control is enabled, then start the background BLE service
+        // if remote control is enabled, then start the remote control layers
         bluetoothRemoteControl.startRemoteControl();
+        webRemoteControl.startRemoteControl();
 
         //speechControl.initSpeechRecognizer();
         initLocation();
@@ -1841,6 +1845,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         }
         getWindow().getDecorView().removeOnLayoutChangeListener(layoutChangeListener);
         bluetoothRemoteControl.stopRemoteControl();
+        webRemoteControl.stopRemoteControl();
         freeAudioListener(false);
         //speechControl.stopSpeechRecognizer();
         applicationInterface.getLocationSupplier().freeLocationListeners();
@@ -2893,6 +2898,8 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
 
     private boolean standbyModeActive = false;
     private float originalBrightness = -1;
+    private boolean remoteScreenDimActive = false;
+    private float remoteScreenDimOriginalBrightness = -1;
 
     /**
      * Check if stand-by mode is currently active
@@ -2901,64 +2908,111 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         return standbyModeActive;
     }
 
+    public boolean isRemoteScreenDimActive() {
+        return remoteScreenDimActive;
+    }
+
+    public void toggleRemoteScreenDim() {
+        setRemoteScreenDim(!remoteScreenDimActive);
+    }
+
+	public void setRemoteScreenDim(boolean enabled) {
+		if( remoteScreenDimActive == enabled ) {
+			return;
+		}
+
+        WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+        if( enabled ) {
+            remoteScreenDimOriginalBrightness = layoutParams.screenBrightness;
+            remoteScreenDimActive = true;
+            layoutParams.screenBrightness = 0.01f;
+        }
+        else {
+            remoteScreenDimActive = false;
+            if( remoteScreenDimOriginalBrightness >= 0 ) {
+                layoutParams.screenBrightness = remoteScreenDimOriginalBrightness;
+            }
+            else {
+                layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+            }
+            remoteScreenDimOriginalBrightness = -1;
+        }
+        getWindow().setAttributes(layoutParams);
+    }
+
     /**
      * Toggle stand-by mode to reduce heat and battery consumption
      */
-    public void clickedStandbyMode(View view) {
-        if( MyDebug.LOG )
-            Log.d(TAG, "clickedStandbyMode");
-        
-        standbyModeActive = !standbyModeActive;
-        
+	public void clickedStandbyMode(View view) {
+		if( MyDebug.LOG )
+			Log.d(TAG, "clickedStandbyMode");
+
+		setStandbyModeActive(!standbyModeActive);
+	}
+
+	public void setStandbyModeActive(boolean enabled) {
+		if( standbyModeActive && enabled ) {
+			return;
+        }
+
+        standbyModeActive = enabled;
+
         WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
         TextView standbyOverlayText = findViewById(R.id.standby_overlay_text);
-        
+
         if (standbyModeActive) {
             // Save original brightness
             originalBrightness = layoutParams.screenBrightness;
-            
+
             // Dim screen to minimum
             layoutParams.screenBrightness = 0.01f;
             getWindow().setAttributes(layoutParams);
-            
+
             // Pause preview to reduce CPU/GPU load
             if (preview != null) {
                 preview.onPause();
             }
-            
+
             // Show overlay text
             if (standbyOverlayText != null) {
                 standbyOverlayText.setVisibility(View.VISIBLE);
             }
-            
-            // Change button appearance
-            ImageButton standbyButton = findViewById(R.id.standby_mode);
-            standbyButton.setAlpha(1.0f);
-            
+
+			// Change button appearance
+			ImageButton standbyButton = findViewById(R.id.standby_mode);
+			if( standbyButton != null ) {
+				standbyButton.setAlpha(1.0f);
+			}
+
         } else {
             // Restore brightness
-            if (originalBrightness >= 0) {
+            if( remoteScreenDimActive ) {
+                layoutParams.screenBrightness = 0.01f;
+            }
+            else if (originalBrightness >= 0) {
                 layoutParams.screenBrightness = originalBrightness;
             } else {
                 layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
             }
             getWindow().setAttributes(layoutParams);
-            
+
             // Resume preview
             if (preview != null) {
                 preview.onResume();
             }
-            
+
             // Hide overlay text
             if (standbyOverlayText != null) {
                 standbyOverlayText.setVisibility(View.GONE);
             }
-            
-            // Restore button appearance
-            ImageButton standbyButton = findViewById(R.id.standby_mode);
-            standbyButton.setAlpha(0.61f);
-        }
-    }
+
+			// Restore button appearance
+			ImageButton standbyButton = findViewById(R.id.standby_mode);
+			if( standbyButton != null ) {
+				standbyButton.setAlpha(0.61f);
+			}
+		}
+	}
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
@@ -3227,6 +3281,9 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                     break;
                 case PreferenceKeys.EnableRemote:
                     bluetoothRemoteControl.startRemoteControl();
+                    break;
+                case PreferenceKeys.EnableWebRemote:
+                    webRemoteControl.startRemoteControl();
                     break;
                 case PreferenceKeys.RemoteName:
                     // The remote address changed, restart the service
@@ -4489,7 +4546,10 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         // done here rather than onCreate, so that changing it in preferences takes effect without restarting app
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         final WindowManager.LayoutParams layout = getWindow().getAttributes();
-        if( force_max || sharedPreferences.getBoolean(PreferenceKeys.MaxBrightnessPreferenceKey, false) ) {
+        if( remoteScreenDimActive ) {
+            layout.screenBrightness = 0.01f;
+        }
+        else if( force_max || sharedPreferences.getBoolean(PreferenceKeys.MaxBrightnessPreferenceKey, false) ) {
             layout.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
         }
         else {
@@ -6661,6 +6721,10 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
 
     public BluetoothRemoteControl getBluetoothRemoteControl() {
         return bluetoothRemoteControl;
+    }
+
+    public WebRemoteControl getWebRemoteControl() {
+        return webRemoteControl;
     }
 
     public PermissionHandler getPermissionHandler() {
