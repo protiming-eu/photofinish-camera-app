@@ -1220,6 +1220,9 @@ public class WebRemoteControl {
             for(String url : urls) {
                 builder.append("\n").append(url).append("/?pin=").append(pin);
             }
+            if( urls.size() > 1 ) {
+                builder.append("\n").append(context.getString(R.string.preference_web_remote_multiple_addresses_summary));
+            }
         }
         return builder.toString();
     }

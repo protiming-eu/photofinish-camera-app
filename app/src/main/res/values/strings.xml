@@ -804,6 +804,7 @@
     <string name="preference_web_remote_status_summary">Enable Wi-Fi/Web remote control to show the address and PIN.</string>
     <string name="preference_web_remote_pin_summary">PIN: %1$s</string>
     <string name="preference_web_remote_open_summary">Open on the other device:</string>
+    <string name="preference_web_remote_multiple_addresses_summary">If multiple addresses are shown, use the one from the same Wi-Fi or hotspot network as the controller device.</string>
     <string name="preference_web_remote_no_network_summary">Connect this phone and the controller to the same Wi-Fi or phone hotspot.</string>
     <string name="preference_ble_remote_category">Bluetooth LE remote control</string>
     <string name="preference_enable_remote">Enable Bluetooth LE remote control</string>

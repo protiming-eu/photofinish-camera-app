@@ -2,6 +2,7 @@ package net.sourceforge.opencamera;
 
 import net.sourceforge.opencamera.ui.FolderChooserDialog;
 import net.sourceforge.opencamera.ui.MyEditTextPreference;
+import net.sourceforge.opencamera.remotecontrol.WebRemoteControl;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -371,6 +372,8 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
                 }
             });
         }
+
+        updateWebRemoteStatus();
 
         {
             final Preference pref = findPreference("preference_privacy_policy");
@@ -946,6 +949,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        updateWebRemoteStatus();
     }
 
     @Override
@@ -1006,6 +1010,16 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
 
         Preference pref = findPreference(key);
         handleOnSharedPreferenceChanged(prefs, key, pref);
+        if( PreferenceKeys.EnableWebRemote.equals(key) || PreferenceKeys.WebRemotePin.equals(key) ) {
+            updateWebRemoteStatus();
+        }
+    }
+
+    private void updateWebRemoteStatus() {
+        Preference webRemoteStatus = findPreference(PreferenceKeys.WebRemoteStatus);
+        if( webRemoteStatus != null && getActivity() != null ) {
+            webRemoteStatus.setSummary(WebRemoteControl.getAccessSummary(getActivity()));
+        }
     }
 
     static void handleOnSharedPreferenceChanged(SharedPreferences prefs, String key, Preference pref) {

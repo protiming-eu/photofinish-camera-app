@@ -782,7 +782,17 @@
     <string name="photo_mode_panorama">Pano.</string> <!-- keep short, as this shows in the popup menu; probably shouldn't be translated? -->
     <string name="photo_mode_panorama_full">Panorama</string>
 
-    <string name="preference_screen_remote_control">Oddaljeni nadzor Bluetooth LE …</string>
+    <string name="preference_screen_remote_control">Oddaljeni nadzor …</string>
+    <string name="preference_web_remote_category">Oddaljeni nadzor Wi‑Fi/Web</string>
+    <string name="preference_enable_web_remote">Omogoči oddaljeni nadzor Wi‑Fi/Web</string>
+    <string name="preference_enable_web_remote_summary">Upravljanje kamere iz brskalnika na drugi napravi v istem Wi‑Fi omrežju ali hotspotu.</string>
+    <string name="preference_web_remote_status">Naslov Web remote</string>
+    <string name="preference_web_remote_status_summary">Omogočite Wi‑Fi/Web remote, da se prikažeta naslov in PIN.</string>
+    <string name="preference_web_remote_pin_summary">PIN: %1$s</string>
+    <string name="preference_web_remote_open_summary">Odpri na drugi napravi:</string>
+    <string name="preference_web_remote_multiple_addresses_summary">Če je prikazanih več naslovov, uporabi tistega iz istega Wi‑Fi ali hotspot omrežja kot naprava za upravljanje.</string>
+    <string name="preference_web_remote_no_network_summary">Povežite ta telefon in napravo za upravljanje na isto Wi‑Fi omrežje ali telefonski hotspot.</string>
+    <string name="preference_ble_remote_category">Oddaljeni nadzor Bluetooth LE</string>
     <string name="preference_enable_remote">Omogoči oddaljeni nadzor Bluetooth LE</string>
     <string name="preference_enable_remote_summary">Omogoči naprave za oddaljeni nadzor Bluetooth LE</string>
     <string name="preference_remote_type">Vrsta oddaljene naprave</string>

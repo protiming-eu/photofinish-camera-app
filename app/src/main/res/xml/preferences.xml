@@ -104,6 +104,20 @@
             android:defaultValue="0"
             />
 
+        <SwitchPreference
+            android:key="preference_enable_web_remote"
+            android:title="@string/preference_enable_web_remote"
+            android:summary="@string/preference_enable_web_remote_summary"
+            android:defaultValue="false"
+            />
+
+        <Preference
+            android:key="preference_web_remote_status"
+            android:title="@string/preference_web_remote_status"
+            android:summary="@string/preference_web_remote_status_summary"
+            android:dependency="preference_enable_web_remote"
+            />
+
         <PreferenceScreen
             android:key="preference_screen_camera_controls_more"
             android:title="@string/preference_screen_camera_controls_more"
