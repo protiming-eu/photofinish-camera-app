@@ -43,6 +43,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     private final List<ProductDetails.SubscriptionOfferDetails> subscriptionOffers = new ArrayList<>();
     private ProductDetails.SubscriptionOfferDetails monthlyOfferDetails;
     private ProductDetails.SubscriptionOfferDetails yearlyOfferDetails;
+    private boolean billingReady;
     private boolean lifetimeManagePromptShown;
     private boolean hasProductAvailabilityWarning;
 
@@ -82,6 +83,14 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if( billingReady ) {
+            queryProductDetails();
+        }
+    }
+
     private void connectBilling() {
         billingClient = BillingClient.newBuilder(this)
                 .enablePendingPurchases()
@@ -93,6 +102,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
             public void onBillingSetupFinished(BillingResult billingResult) {
                 runOnUiThread(() -> {
                     if( billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK ) {
+                        billingReady = true;
                         statusText.setText(R.string.subscription_status_ready);
                         queryProductDetails();
                         refreshPurchases(false);
@@ -111,6 +121,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
     }
 
     private void queryProductDetails() {
+        statusText.setText(R.string.subscription_status_loading);
         querySubscriptionProductDetails();
         queryLifetimeProductDetails();
     }
@@ -203,12 +214,10 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         lifetimeButton.setText(R.string.subscription_buy_lifetime);
 
         monthlyOfferDetails = resolveSubscriptionOffer(
-                getString(R.string.billing_subscription_base_plan_monthly),
-                "P1M"
+                getString(R.string.billing_subscription_base_plan_monthly)
         );
         yearlyOfferDetails = resolveSubscriptionOffer(
-                getString(R.string.billing_subscription_base_plan_yearly),
-                "P1Y"
+                getString(R.string.billing_subscription_base_plan_yearly)
         );
         ProductDetails lifetime = lifetimeProductDetails;
         String monthlyPrice = null;
@@ -388,7 +397,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         }
     }
 
-    private ProductDetails.SubscriptionOfferDetails resolveSubscriptionOffer(String basePlanId, String billingPeriod) {
+    private ProductDetails.SubscriptionOfferDetails resolveSubscriptionOffer(String basePlanId) {
         ProductDetails.SubscriptionOfferDetails fallbackByBasePlan = null;
         for(ProductDetails.SubscriptionOfferDetails offer : subscriptionOffers) {
             if( !basePlanId.equals(offer.getBasePlanId()) ) {
@@ -404,22 +413,7 @@ public class SubscriptionActivity extends Activity implements PurchasesUpdatedLi
         if( fallbackByBasePlan != null ) {
             return fallbackByBasePlan;
         }
-
-        ProductDetails.SubscriptionOfferDetails fallbackByPeriod = null;
-        for(ProductDetails.SubscriptionOfferDetails offer : subscriptionOffers) {
-            ProductDetails.PricingPhase paidPhase = getPaidPricingPhase(offer);
-            if( paidPhase == null || !billingPeriod.equals(paidPhase.getBillingPeriod()) ) {
-                continue;
-            }
-            if( hasFreeTrial(offer) ) {
-                return offer;
-            }
-            if( fallbackByPeriod == null ) {
-                fallbackByPeriod = offer;
-            }
-        }
-
-        return fallbackByPeriod;
+        return null;
     }
 
     private void launchSubscriptionPurchase(ProductDetails.SubscriptionOfferDetails offerDetails, String expectedBasePlanId) {
