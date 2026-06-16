@@ -1614,8 +1614,12 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         return exposure_seekbar_values.get(progress);
     }
 
+    public boolean manualExposureControlsAllowed() {
+        return AccessControl.hasSubscriptionAccess(this) || preview == null || !preview.isVideo();
+    }
+
     public void changeISO(int change) {
-        if( AccessControl.hasSubscriptionAccess(this) && preview.supportsISORange() ) {
+        if( manualExposureControlsAllowed() && preview.supportsISORange() ) {
             mainUI.changeSeekbar(R.id.iso_seekbar, change);
         }
     }

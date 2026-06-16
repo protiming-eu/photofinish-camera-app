@@ -1,7 +1,6 @@
 package net.sourceforge.opencamera.ui;
 
 import net.sourceforge.opencamera.MyApplicationInterface;
-import net.sourceforge.opencamera.AccessControl;
 import net.sourceforge.opencamera.cameracontroller.CameraController;
 import net.sourceforge.opencamera.MainActivity;
 import net.sourceforge.opencamera.MyDebug;
@@ -2093,7 +2092,7 @@ public class MainUI {
         ViewGroup iso_buttons_container = main_activity.findViewById(R.id.iso_buttons);
         iso_buttons_container.removeAllViews();
         List<String> supported_isos;
-        final boolean manual_exposure_locked = !AccessControl.hasSubscriptionAccess(main_activity);
+        final boolean manual_exposure_locked = !main_activity.manualExposureControlsAllowed();
         
         // For high speed video, show ISO controls (Camera2 requires manual ISO to set exposure time)
         boolean is_high_speed_video = preview.isVideo() && preview.isVideoHighSpeed();
@@ -2122,10 +2121,6 @@ public class MainUI {
             supported_isos = new ArrayList<>();
             supported_isos.add(CameraController.ISO_DEFAULT);
             iso_button_manual_index = -1;
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(PreferenceKeys.ISOPreferenceKey, CameraController.ISO_DEFAULT);
-            editor.putLong(PreferenceKeys.ExposureTimePreferenceKey, CameraController.EXPOSURE_TIME_DEFAULT);
-            editor.apply();
         }
         else {
             supported_isos = preview.getSupportedISOs();

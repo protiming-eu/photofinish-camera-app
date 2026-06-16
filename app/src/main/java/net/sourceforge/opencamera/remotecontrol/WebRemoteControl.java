@@ -17,7 +17,6 @@ import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 
-import net.sourceforge.opencamera.AccessControl;
 import net.sourceforge.opencamera.MainActivity;
 import net.sourceforge.opencamera.MyDebug;
 import net.sourceforge.opencamera.PreferenceKeys;
@@ -514,11 +513,11 @@ public class WebRemoteControl {
     }
 
     private boolean supportsRemoteManualExposure(Preview preview) {
-        return AccessControl.hasSubscriptionAccess(main_activity) && preview != null && preview.supportsISORange();
+        return main_activity.manualExposureControlsAllowed() && preview != null && preview.supportsISORange();
     }
 
     private CommandResult manualExposureUnavailableResult() {
-        return CommandResult.error("unsupported", "Manual ISO/shutter speed is not available on this camera or subscription");
+        return CommandResult.error("unsupported", "Manual ISO/shutter speed is not available for this camera, mode, or subscription");
     }
 
     private int getFallbackManualISO(Preview preview) {

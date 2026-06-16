@@ -1240,7 +1240,7 @@ After enabling, open a recorded video from the Gallery button to launch the inte
     <string name="subscription_screen_title">Unlock Pro Features</string>
     <string name="subscription_features_title">What&#8217;s included:</string>
     <string name="subscription_feature_1">✓  Frame-by-frame video player</string>
-    <string name="subscription_feature_2">✓  Manual ISO &amp; shutter speed control</string>
+    <string name="subscription_feature_2">✓  Manual ISO &amp; shutter speed control for video</string>
     <string name="subscription_feature_3">✓  Slow-motion at 1/8× and 1/4× speed</string>
     <string name="subscription_feature_4">✓  Ad-free after purchase</string>
     <string name="subscription_feature_5">✓  All future Pro features</string>

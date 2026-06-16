@@ -505,7 +505,7 @@ public class MyApplicationInterface extends BasicApplicationInterface {
 
     @Override
     public String getISOPref() {
-        if( !AccessControl.hasSubscriptionAccess(main_activity) ) {
+        if( !main_activity.manualExposureControlsAllowed() ) {
             return CameraController.ISO_DEFAULT;
         }
         return sharedPreferences.getString(PreferenceKeys.ISOPreferenceKey, CameraController.ISO_DEFAULT);
@@ -1549,7 +1549,7 @@ public class MyApplicationInterface extends BasicApplicationInterface {
 
     @Override
     public long getExposureTimePref() {
-        if( !AccessControl.hasSubscriptionAccess(main_activity) ) {
+        if( !main_activity.manualExposureControlsAllowed() ) {
             return CameraController.EXPOSURE_TIME_DEFAULT;
         }
         return sharedPreferences.getLong(PreferenceKeys.ExposureTimePreferenceKey, CameraController.EXPOSURE_TIME_DEFAULT);
@@ -3105,7 +3105,7 @@ public class MyApplicationInterface extends BasicApplicationInterface {
     @Override
     public void setISOPref(String iso) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        if( AccessControl.hasSubscriptionAccess(main_activity) ) {
+        if( main_activity.manualExposureControlsAllowed() ) {
             editor.putString(PreferenceKeys.ISOPreferenceKey, iso);
         }
         else {
@@ -3198,7 +3198,7 @@ public class MyApplicationInterface extends BasicApplicationInterface {
     @Override
     public void setExposureTimePref(long exposure_time) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        if( AccessControl.hasSubscriptionAccess(main_activity) ) {
+        if( main_activity.manualExposureControlsAllowed() ) {
             editor.putLong(PreferenceKeys.ExposureTimePreferenceKey, exposure_time);
         }
         else {

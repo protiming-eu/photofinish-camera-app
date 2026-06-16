@@ -110,7 +110,7 @@ public class LauncherActivity extends Activity {
 
         if( BuildConfig.SHOW_SUBSCRIPTION_OFFER ) {
             String offerText = getString(R.string.subscription_offer_launch);
-            if( offerText.trim().isEmpty() ) {
+            if( hasPaidSubscriptionAccess || offerText.trim().isEmpty() ) {
                 subscriptionOffer.setVisibility(View.GONE);
             }
             else {
