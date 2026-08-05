@@ -21,10 +21,14 @@ gfx/
 testdata/
 
 *.db
+*.hprof
 *.iml
 *.apk
 *.ap_
+.DS_Store
 
 local.properties
 gradle.properties
+opencamera_log.txt
+privacy_policy.html
 uninstall.bat
