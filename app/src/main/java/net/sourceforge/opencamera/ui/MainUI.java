@@ -1,6 +1,7 @@
 package net.sourceforge.opencamera.ui;
 
 import net.sourceforge.opencamera.MyApplicationInterface;
+import net.sourceforge.opencamera.AccessControl;
 import net.sourceforge.opencamera.cameracontroller.CameraController;
 import net.sourceforge.opencamera.MainActivity;
 import net.sourceforge.opencamera.MyDebug;
@@ -1093,7 +1094,7 @@ public class MainUI {
             if( main_activity.getPreview().isVideo() ) {
                 if( MyDebug.LOG )
                     Log.d(TAG, "set icon to video");
-                resource = main_activity.getPreview().isVideoRecording() ? R.drawable.take_video_recording : R.drawable.take_video_selector;
+                resource = main_activity.getPreview().isVideoRecording() ? R.drawable.take_video_recording : R.drawable.take_video_shutter_icon;
                 content_description = main_activity.getPreview().isVideoRecording() ? R.string.stop_video : R.string.start_video;
                 switch_video_content_description = R.string.switch_to_photo;
             }
@@ -1108,7 +1109,7 @@ public class MainUI {
             else {
                 if( MyDebug.LOG )
                     Log.d(TAG, "set icon to photo");
-                resource = R.drawable.take_photo_selector;
+                resource = R.drawable.take_photo_shutter_icon;
                 content_description = R.string.take_photo;
                 switch_video_content_description = R.string.switch_to_video;
             }
@@ -1121,6 +1122,8 @@ public class MainUI {
             resource = main_activity.getPreview().isVideo() ? R.drawable.take_photo : R.drawable.take_video;
             view.setImageResource(resource);
             view.setTag(resource); // for testing
+
+
         }
     }
 
@@ -2090,12 +2093,13 @@ public class MainUI {
         ViewGroup iso_buttons_container = main_activity.findViewById(R.id.iso_buttons);
         iso_buttons_container.removeAllViews();
         List<String> supported_isos;
+        final boolean manual_exposure_locked = !AccessControl.hasSubscriptionAccess(main_activity);
         
         // For high speed video, show ISO controls (Camera2 requires manual ISO to set exposure time)
         boolean is_high_speed_video = preview.isVideo() && preview.isVideoHighSpeed();
         
         // Removed video recording check - allow manual ISO/shutter in video mode
-        if( preview.supportsISORange() ) {
+        if( preview.supportsISORange() && !manual_exposure_locked ) {
             if( MyDebug.LOG )
                 Log.d(TAG, "supports ISO range");
             int min_iso = preview.getMinimumISO();
@@ -2114,6 +2118,15 @@ public class MainUI {
             values.add(ISOToButtonText(max_iso));
             supported_isos = values;
         }
+        else if( preview.supportsISORange() ) {
+            supported_isos = new ArrayList<>();
+            supported_isos.add(CameraController.ISO_DEFAULT);
+            iso_button_manual_index = -1;
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(PreferenceKeys.ISOPreferenceKey, CameraController.ISO_DEFAULT);
+            editor.putLong(PreferenceKeys.ExposureTimePreferenceKey, CameraController.EXPOSURE_TIME_DEFAULT);
+            editor.apply();
+        }
         else {
             supported_isos = preview.getSupportedISOs();
             iso_button_manual_index = -1;
@@ -2121,6 +2134,9 @@ public class MainUI {
         
         // Create ISO buttons for all cases (including high speed video)
         String current_iso = sharedPreferences.getString(PreferenceKeys.ISOPreferenceKey, CameraController.ISO_DEFAULT);
+        if( manual_exposure_locked ) {
+            current_iso = CameraController.ISO_DEFAULT;
+        }
         // if the manual ISO value isn't one of the "preset" values, then instead highlight the manual ISO icon
         if( !current_iso.equals(CameraController.ISO_DEFAULT) && supported_isos != null && supported_isos.contains(manual_iso_value) && !supported_isos.contains(current_iso) )
             current_iso = manual_iso_value;

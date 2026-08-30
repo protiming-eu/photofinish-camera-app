@@ -4,6 +4,8 @@ import android.app.Application;
 import android.os.Process;
 import android.util.Log;
 
+import com.google.android.gms.ads.MobileAds;
+
 /** We override the Application class to implement the workaround at
  *  https://issuetracker.google.com/issues/36972466#comment14 for Google bug crash. It seems ugly,
  *  but Google consider this a low priority despite calling these "bad behaviours" in applications!
@@ -17,6 +19,14 @@ public class OpenCameraApplication extends Application {
             Log.d(TAG, "onCreate");
         super.onCreate();
         checkAppReplacingState();
+
+        if( BuildConfig.SHOW_ADS ) {
+            MobileAds.initialize(this);
+        }
+
+        if( BuildConfig.SHOW_SUBSCRIPTION_OFFER ) {
+            SubscriptionBillingSync.syncEntitlement(this, null);
+        }
     }
 
     private void checkAppReplacingState() {

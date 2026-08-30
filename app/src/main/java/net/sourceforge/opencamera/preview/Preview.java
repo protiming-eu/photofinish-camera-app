@@ -2,6 +2,7 @@ package net.sourceforge.opencamera.preview;
 
 import net.sourceforge.opencamera.JavaImageFunctions;
 import net.sourceforge.opencamera.JavaImageProcessing;
+import net.sourceforge.opencamera.PreferenceKeys;
 import net.sourceforge.opencamera.cameracontroller.RawImage;
 //import net.sourceforge.opencamera.MainActivity;
 import net.sourceforge.opencamera.MyDebug;
@@ -46,6 +47,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -71,6 +73,7 @@ import android.os.Bundle;
 //import android.os.Environment;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
+import android.preference.PreferenceManager;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -240,6 +243,7 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
     }
     private VideoFileInfo videoFileInfo = new VideoFileInfo();
     private VideoFileInfo nextVideoFileInfo; // used for Android 8+ to handle seamless restart (see MediaRecorder.setNextOutputFile())
+    private String pending_video_error_features = "";
 
     private static final int PHASE_NORMAL = 0;
     private static final int PHASE_TIMER = 1;
@@ -1230,10 +1234,14 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
                 if( MyDebug.LOG )
                     Log.d(TAG, "done video_recorder.stop()");
             }
-            catch(RuntimeException e) {
-                // stop() can throw a RuntimeException if stop is called too soon after start - this indicates the video file is corrupt, and should be deleted
-                if( MyDebug.LOG )
-                    Log.d(TAG, "runtime exception when stopping video");
+            catch(Exception e) {
+                // stop() can throw an exception if stop is called too soon after start - this indicates the video file is corrupt, and should be deleted
+                if( MyDebug.LOG ) {
+                    Log.d(TAG, "exception when stopping video: " + e.getClass().getName() + " - " + e.getMessage());
+                    MyDebug.logStackTrace(TAG, "exception details", e);
+                }
+                setPendingVideoErrorFeaturesForCurrentMode();
+                markCurrentSlowMotionCaptureRateAsUnsupported();
                 videoFileInfo.close();
                 applicationInterface.deleteUnusedVideo(videoFileInfo.video_method, videoFileInfo.video_uri, videoFileInfo.video_filename);
 
@@ -1885,12 +1893,34 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
                     if( MyDebug.LOG )
                         Log.e(TAG, "error from CameraController: camera device failed");
                     if( camera_controller != null ) {
+                        final boolean speed_not_available_for_slow_motion = isSlowMotionHighSpeedVideoMode();
+                        final boolean manual_iso_not_available_for_slow_motion = speed_not_available_for_slow_motion && isManualISOEnabledForCurrentMode();
+                        final String slow_motion_speed = getCurrentSlowMotionCaptureRateString();
+                        if( manual_iso_not_available_for_slow_motion ) {
+                            pending_video_error_features = getContext().getResources().getString(R.string.error_features_slow_motion)
+                                    + "/" + getContext().getResources().getString(R.string.error_features_manual_iso);
+                        }
+                        else if( speed_not_available_for_slow_motion ) {
+                            pending_video_error_features = getContext().getResources().getString(R.string.error_features_slow_motion);
+                        }
+                        if( speed_not_available_for_slow_motion && !manual_iso_not_available_for_slow_motion ) {
+                            markCurrentSlowMotionCaptureRateAsUnsupported();
+                        }
                         if( MyDebug.LOG )
                             Log.e(TAG, "set camera_controller to null");
                         camera_controller = null;
                         camera_open_state = CameraOpenState.CAMERAOPENSTATE_CLOSED;
                         preview_started_state = PREVIEW_NOT_STARTED;
-                        applicationInterface.onCameraError();
+                        if( manual_iso_not_available_for_slow_motion ) {
+                            applicationInterface.setISOPref(CameraController.ISO_DEFAULT);
+                            showToast(null, getContext().getResources().getString(R.string.manual_iso_shutter_not_available_at_speed, slow_motion_speed));
+                        }
+                        else if( speed_not_available_for_slow_motion ) {
+                            showToast(null, getContext().getResources().getString(R.string.speed_x_not_available, slow_motion_speed));
+                        }
+                        else {
+                            applicationInterface.onCameraError();
+                        }
                     }
                 }
             };
@@ -3253,24 +3283,6 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
             }
             if( MyDebug.LOG )
                 Log.d(TAG, "video_high_speed?: " + video_high_speed);
-        }
-
-        // For high speed video, check if device supports manual ISO
-        // If not supported (detected in CameraController2), it will automatically fallback to auto
-        if( is_video && video_high_speed && supports_iso_range && is_manual_iso ) {
-            // Check if this device supports manual ISO for high speed video
-            CameraController2 controller2 = camera_controller instanceof CameraController2 ? (CameraController2)camera_controller : null;
-            if( controller2 != null && !controller2.supportsManualISOForHighSpeed() ) {
-                if( MyDebug.LOG )
-                    Log.d(TAG, "manual ISO not supported for video_high_speed on this device, forcing to auto");
-                camera_controller.setManualISO(false, 0);
-                is_manual_iso = false;
-            }
-            else {
-                if( MyDebug.LOG )
-                    Log.d(TAG, "trying manual ISO for video_high_speed - will fallback to auto if not supported");
-                // Let it try - if it fails, CameraController2 will handle the fallback
-            }
         }
 
         {
@@ -4659,6 +4671,67 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
         return iso;
     }
 
+    private boolean isSlowMotionHighSpeedVideoMode() {
+        if( !(using_android_l && is_video && video_high_speed) ) {
+            return false;
+        }
+        if( capture_rate_factor >= 1.0f - 0.0001f ) {
+            return false;
+        }
+        return true;
+    }
+
+    private String getCurrentSlowMotionCaptureRateString() {
+        if( Math.abs(capture_rate_factor - 0.125f) < 0.0001f ) {
+            return "0.125x";
+        }
+        if( Math.abs(capture_rate_factor - 0.25f) < 0.0001f ) {
+            return "0.25x";
+        }
+        if( Math.abs(capture_rate_factor - 0.5f) < 0.0001f ) {
+            return "0.5x";
+        }
+        return String.format(Locale.US, "%.3gx", capture_rate_factor);
+    }
+
+    private boolean isManualISOEnabledForCurrentMode() {
+        if( !supports_iso_range ) {
+            return false;
+        }
+        String iso_pref = applicationInterface.getISOPref();
+        return !CameraController.ISO_DEFAULT.equals(iso_pref);
+    }
+
+    private void setPendingVideoErrorFeaturesForCurrentMode() {
+        if( !pending_video_error_features.isEmpty() ) {
+            return;
+        }
+        if( applicationInterface.getVideoCaptureRateFactor() < 1.0f-1.0e-5f ) {
+            pending_video_error_features = getContext().getResources().getString(R.string.error_features_slow_motion);
+            if( isManualISOEnabledForCurrentMode() ) {
+                pending_video_error_features += "/" + getContext().getResources().getString(R.string.error_features_manual_iso);
+            }
+        }
+    }
+
+    private void markCurrentSlowMotionCaptureRateAsUnsupported() {
+        if( !isSlowMotionHighSpeedVideoMode() ) {
+            return;
+        }
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        int current_camera_id = getCameraId();
+        String cameraIdSPhysical = applicationInterface.getCameraIdSPhysicalPref();
+        String unsupported_key = PreferenceKeys.getVideoCaptureRateUnsupportedPreferenceKey(current_camera_id, cameraIdSPhysical, capture_rate_factor);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(unsupported_key, true);
+        String capture_rate_key = PreferenceKeys.getVideoCaptureRatePreferenceKey(current_camera_id, cameraIdSPhysical);
+        editor.putFloat(capture_rate_key, 1.0f);
+        editor.apply();
+        if( MyDebug.LOG ) {
+            Log.w(TAG, "mark slow motion capture rate unsupported at runtime: " + capture_rate_factor);
+        }
+    }
+
     public void setISO(int new_iso) {
         if( MyDebug.LOG )
             Log.d(TAG, "setISO(): " + new_iso);
@@ -5152,7 +5225,13 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
     }
 
     public String getErrorFeatures(VideoProfile profile) {
-        boolean was_4k = false, was_bitrate = false, was_fps = false, was_slow_motion = false;
+        if( !pending_video_error_features.isEmpty() ) {
+            String features = pending_video_error_features;
+            pending_video_error_features = "";
+            return features;
+        }
+
+        boolean was_4k = false, was_bitrate = false, was_fps = false, was_slow_motion = false, was_manual_iso = false;
         if( profile.videoFrameWidth == 3840 && profile.videoFrameHeight == 2160 && applicationInterface.getForce4KPref() ) {
             was_4k = true;
         }
@@ -5167,8 +5246,13 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
         else if( !fps_value.equals("default") ) {
             was_fps = true;
         }
+        // Check if manual ISO was enabled
+        String iso_pref = applicationInterface.getISOPref();
+        if( !CameraController.ISO_DEFAULT.equals(iso_pref) ) {
+            was_manual_iso = true;
+        }
         String features = "";
-        if( was_4k || was_bitrate || was_fps || was_slow_motion ) {
+        if( was_4k || was_bitrate || was_fps || was_slow_motion || was_manual_iso ) {
             if( was_4k ) {
                 features = getContext().getResources().getString(R.string.error_features_4k);
             }
@@ -5189,6 +5273,12 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
                     features = getContext().getResources().getString(R.string.error_features_slow_motion);
                 else
                     features += "/" + getContext().getResources().getString(R.string.error_features_slow_motion);
+            }
+            if( was_manual_iso ) {
+                if( features.isEmpty() )
+                    features = getContext().getResources().getString(R.string.error_features_manual_iso);
+                else
+                    features += "/" + getContext().getResources().getString(R.string.error_features_manual_iso);
             }
         }
         return features;
